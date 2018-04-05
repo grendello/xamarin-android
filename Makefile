@@ -77,10 +77,8 @@ linux-prepare::
 	if [ "x$$BINFMT_WARN" = "xyes" ]; then \
 		cat Documentation/binfmt_misc-warning-Linux.txt ; \
 	fi; \
-	if [ -f build-tools/scripts/dependencies/linux-prepare-$(LINUX_DISTRO)-$(LINUX_DISTRO_RELEASE).sh ]; then \
-		sh build-tools/scripts/dependencies/linux-prepare-$(LINUX_DISTRO)-$(LINUX_DISTRO_RELEASE).sh; \
-	elif [ -f build-tools/scripts/dependencies/linux-prepare-$(LINUX_DISTRO).sh ]; then \
-		sh build-tools/scripts/dependencies/linux-prepare-$(LINUX_DISTRO).sh; \
+	if [ -f build-tools/scripts/dependencies/linux-prepare-$(LINUX_DISTRO).sh ]; then \
+		sh build-tools/scripts/dependencies/linux-prepare-$(LINUX_DISTRO).sh $(LINUX_DISTRO_RELEASE); \
 	fi
 
 # $(call GetPath,path)
