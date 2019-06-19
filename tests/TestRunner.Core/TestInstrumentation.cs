@@ -16,6 +16,7 @@ namespace Xamarin.Android.UnitTests
 		protected sealed class KnownArguments
 		{
 			public const string LogLevel = "loglevel";
+			public const string Assemblies = "assemblies";
 		}
 
 		const string ResultExecutedTests = "run";
@@ -57,7 +58,7 @@ namespace Xamarin.Android.UnitTests
 
 			if (aname == null)
 				return null;
-			
+
 			foreach (string dir in TestAssemblyDirectories) {
 				if (String.IsNullOrEmpty (dir))
 					continue;
@@ -208,7 +209,7 @@ namespace Xamarin.Android.UnitTests
 #if __ANDROID_26__
 				// .Serial was deprecated in API26, .GetSerial () is the recommended replacement
 				if (((int) Build.VERSION.SdkInt) >= 26)
-					LogPaddedInfo ("Serial", Build.GetSerial (), alignColumn);		
+					LogPaddedInfo ("Serial", Build.GetSerial (), alignColumn);
 				else
 #endif
 					LogPaddedInfo ("Serial", Build.Serial, alignColumn);
@@ -236,14 +237,44 @@ namespace Xamarin.Android.UnitTests
 			LogPaddedInfo ("VERSION.Release", Build.VERSION.Release, alignColumn);
 			LogPaddedInfo ("VERSION.Sdk", Build.VERSION.Sdk, alignColumn);
 			LogPaddedInfo ("VERSION.SdkInt", Build.VERSION.SdkInt.ToString (), alignColumn);
-			LogPaddedInfo ("Device Date/Time", DateTime.UtcNow.ToString (), alignColumn); 
+			LogPaddedInfo ("Device Date/Time", DateTime.UtcNow.ToString (), alignColumn);
 
 			// FIXME: add data about how the app was compiled (e.g. ARMvX, LLVM, Linker options)
 		}
 
+		IList<TestAssemblyInfo> FilterAssemblies (string assemblyList, IList<TestAssemblyInfo> assemblies)
+		{
+			if (String.IsNullOrEmpty (assemblyList) || assemblies == null || assemblies.Count == 0)
+				return assemblies;
+
+			var includeAssemblies = new Hash<string> (StringComparer.OrdinalIgnoreCase);
+			foreach (string asm in assemblyList.Split (new [] { ',' }, StringSplitOptions.RemoveEmptyEntries)) {
+				if (includeAssemblies.Contains (asm))
+					continue;
+				includeAssemblies.Add (asm);
+			}
+
+			var newAssemblies = new List<TestAssemblyInfo> ();
+			foreach (TestAssemblyInfo tai in assemblies) {
+				if (tai == null)
+					continue;
+				string name = Path.GetFileName (tai.FullPath);
+				if (!includeAssemblies.Contains (name))
+					continue;
+				newAssemblies.Add (tai);
+			}
+
+			return newAssemblies;
+		}
+
 		bool RunTests (ref Bundle results)
 		{
-			IList<TestAssemblyInfo> assemblies = GetTestAssemblies ();
+			string assemblyList = null;
+			if (arguments.ContainsKey (KnownArguments.Assemblies)) {
+				string assemblyList = arguments.GetString (KnownArguments.Assemblies)?.Trim ();
+			}
+
+			IList<TestAssemblyInfo> assemblies = FilterAssemblies (assemblyList, GetTestAssemblies ());
 			if (assemblies == null || assemblies.Count == 0) {
 				Log.Info (LogTag, "No test assemblies loaded");
 				return false;
@@ -383,7 +414,7 @@ namespace Xamarin.Android.UnitTests
 				string line = reader.ReadLine ()?.Trim ();
 				if (line == null)
 					return excludedTestNames;
-				
+
 				if (line.Length == 0 || line.StartsWith ("#", StringComparison.Ordinal))
 					continue;
 
