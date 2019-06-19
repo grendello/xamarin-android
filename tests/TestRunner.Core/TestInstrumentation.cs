@@ -247,6 +247,7 @@ namespace Xamarin.Android.UnitTests
 			if (String.IsNullOrEmpty (assemblyList) || assemblies == null || assemblies.Count == 0)
 				return assemblies;
 
+			Log.Info ($"Assemblies to include in the run: {assemblyList}");
 			var includeAssemblies = new Hash<string> (StringComparer.OrdinalIgnoreCase);
 			foreach (string asm in assemblyList.Split (new [] { ',' }, StringSplitOptions.RemoveEmptyEntries)) {
 				if (includeAssemblies.Contains (asm))
@@ -261,6 +262,7 @@ namespace Xamarin.Android.UnitTests
 				string name = Path.GetFileName (tai.FullPath);
 				if (!includeAssemblies.Contains (name))
 					continue;
+				Log.Info ($"Assembly matches filter: {tai.FullPath}");
 				newAssemblies.Add (tai);
 			}
 
