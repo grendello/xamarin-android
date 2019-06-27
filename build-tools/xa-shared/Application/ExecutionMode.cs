@@ -1,4 +1,4 @@
-namespace Xamarin.Android.Prepare
+namespace Xamarin.Android.Shared
 {
 	enum ExecutionMode
 	{

@@ -54,6 +54,9 @@
   <ItemGroup>
     <Compile Include="$(IntermediateOutputPath)\BuildInfo.Generated.cs" />
     <Compile Include="$(IntermediateOutputPath)\Properties.Defaults.cs" />
+    <Compile Include="$(SharedSourcesRootDir)\Application\Characters.cs" />
+    <Compile Include="$(SharedSourcesRootDir)\Application\ExecutionMode.cs" />
+    <Compile Include="$(SharedSourcesRootDir)\Application\Helpers.cs" />
     <Compile Include="$(SharedSourcesRootDir)\Application\Log.cs" />
     <Compile Include="$(SharedSourcesRootDir)\Application\LoggingVerbosity.cs" />
     <Compile Include="Main.cs" />
@@ -69,12 +72,10 @@
     <Compile Include="Application\BclFileType.cs" />
     <Compile Include="Application\BuildInfo.cs" />
     <Compile Include="Application\BundleItem.cs" />
-    <Compile Include="Application\Characters.cs" />
     <Compile Include="Application\CompressionFormat.cs" />
     <Compile Include="Application\Context.cs" />
     <Compile Include="Application\DownloadStatus.cs" />
     <Compile Include="Application\EssentialTools.cs" />
-    <Compile Include="Application\ExecutionMode.cs" />
     <Compile Include="Application\Extensions.DictionaryOfProgramVersionParser.cs" />
     <Compile Include="Application\Extensions.ListOfBundleItem.cs" />
     <Compile Include="Application\Extensions.Runtime.cs" />

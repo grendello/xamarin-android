@@ -40,6 +40,9 @@
     <Compile Include="$(IntermediateOutputPath)\BuildInfo.Generated.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Tests.cs" />
+    <Compile Include="$(SharedSourcesRootDir)\Application\Characters.cs" />
+    <Compile Include="$(SharedSourcesRootDir)\Application\ExecutionMode.cs" />
+    <Compile Include="$(SharedSourcesRootDir)\Application\Helpers.cs" />
     <Compile Include="$(SharedSourcesRootDir)\Application\Log.cs" />
     <Compile Include="$(SharedSourcesRootDir)\Application\LoggingVerbosity.cs" />
     <Compile Include="Application\AabDispatcher.cs" />

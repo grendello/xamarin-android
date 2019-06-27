@@ -338,31 +338,12 @@ namespace Xamarin.Android.Prepare
 
 		Context ()
 		{
-			try {
-				// This may throw on Windows
-				Console.CursorVisible = false;
-			} catch (IOException) {
-				// Ignore
-			}
-
-			// Standard Console class offers no way to detect if the terminal can use color, so we use this rather poor
-			// way to detect it
-			canOutputColor = true;
-			try {
-				ConsoleColor color = Console.ForegroundColor;
-			} catch (IOException) {
-				canOutputColor = false;
-			}
+			Helpers.ConfigureConsole ();
+			canOutputColor = Helpers.ConsoleSupportsColor ();
+			canConsoleUseUnicode = Helpers.ConsoleSupportsUnicode ();
+			InteractiveSession = Helpers.IsInteractiveSession ();
 
 			Properties.PropertiesChanged += PropertiesChanged;
-			canConsoleUseUnicode =
-				Console.OutputEncoding is UTF7Encoding ||
-				Console.OutputEncoding is UTF8Encoding ||
-				Console.OutputEncoding is UTF32Encoding ||
-				Console.OutputEncoding is UnicodeEncoding;
-
-			Log.Todo ("better checks for interactive session (isatty?)");
-			InteractiveSession = !Console.IsOutputRedirected;
 
 			var now = DateTime.Now;
 			BuildTimeStamp = $"{now.Year}{now.Month:00}{now.Day:00}T{now.Hour:00}{now.Minute:00}{now.Second:00}";
@@ -705,7 +686,7 @@ namespace Xamarin.Android.Prepare
 		{
 			SetCondition (KnownConditions.AllowProgramInstallation, true);
 
-			characters = Characters.Create (this);
+			characters = Characters.Create (NoEmoji, DullMode, CanConsoleUseUnicode);
 
 			Log.StatusLine ("Main log file: ", MainLogFilePath, ConsoleColor.Gray, Log.DestinationColor);
 

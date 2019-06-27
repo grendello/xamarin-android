@@ -1,6 +1,7 @@
 using System;
 
 using Mono.Options;
+using Xamarin.Android.Shared;
 
 namespace Xamarin.Android.Tests.Driver
 {
@@ -70,7 +71,7 @@ namespace Xamarin.Android.Tests.Driver
 			}
 
 			if (!parsedOptions.AnyTestsSelected) {
-				Console.Error.WriteLine ("At least one test selection option must be passed to the program. Please see the --help output");
+				Log.Instance.ErrorLine ("At least one test selection option must be passed to the program. Please see the --help output");
 				return 1;
 			}
 

@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Android.Prepare
+namespace Xamarin.Android.Shared
 {
 	abstract class Characters
 	{
@@ -14,12 +14,9 @@ namespace Xamarin.Android.Prepare
 		protected Characters ()
 		{}
 
-		public static Characters Create (Context context)
+		public static Characters Create (bool noEmoji, bool dullMode, bool consoleCanUseUnicode)
 		{
-			if (context == null)
-				throw new ArgumentNullException (nameof (context));
-
-			if (!context.NoEmoji && !context.DullMode && context.CanConsoleUseUnicode)
+			if (!noEmoji && !dullMode && consoleCanUseUnicode)
 				return new UnicodeChars ();
 
 			return new PlainChars ();
