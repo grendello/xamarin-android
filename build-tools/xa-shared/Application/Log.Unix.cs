@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 
-namespace Xamarin.Android.Prepare
+namespace Xamarin.Android.Shared
 {
 	partial class Log
 	{

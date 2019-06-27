@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 using Mono.Unix.Native;
+using Xamarin.Android.Shared;
 
 namespace Xamarin.Android.Prepare
 {

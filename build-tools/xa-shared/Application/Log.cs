@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Reflection;
 
-namespace Xamarin.Android.Prepare
+namespace Xamarin.Android.Shared
 {
 	partial class Log : IDisposable
 	{
@@ -45,16 +45,14 @@ namespace Xamarin.Android.Prepare
 		const string MessageSeverity = "Message: ";
 		const string DebugSeverity   = "  Debug: ";
 
-		static Context ctx;
-		static LoggingVerbosity Verbosity => ctx != null ? ctx.LoggingVerbosity : Configurables.Defaults.LoggingVerbosity;
-
-		public static Log Instance => instance;
-
-		static bool UseColor => ctx?.UseColor ?? true;
+		static LoggingVerbosity Verbosity => ConfigureLogVerbosity ();
+		static bool UseColor => ConfigureUseColor ();
 
 		TextWriter logFileWriter;
 		bool alreadyDisposed;
 		Stopwatch watch;
+
+		public static Log Instance => instance;
 
 		static Log ()
 		{
@@ -67,13 +65,6 @@ namespace Xamarin.Android.Prepare
 			SetLogFile (logFilePath);
 			watch = new Stopwatch ();
 			watch.Start ();
-		}
-
-		public static void SetContext (Context context)
-		{
-			if (context == null)
-				throw new ArgumentNullException (nameof (context));
-			ctx = context;
 		}
 
 		public void SetLogFile (string logFilePath)

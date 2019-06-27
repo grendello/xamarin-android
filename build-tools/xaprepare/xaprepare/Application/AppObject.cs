@@ -1,3 +1,5 @@
+using Xamarin.Android.Shared;
+
 namespace Xamarin.Android.Prepare
 {
 	class AppObject

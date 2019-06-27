@@ -1,5 +1,7 @@
 using System;
 
+using Xamarin.Android.Shared;
+
 namespace Xamarin.Android.Prepare
 {
 	partial class NinjaRunner

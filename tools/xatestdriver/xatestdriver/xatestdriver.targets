@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="ReplaceFileContents" Condition=" '$(OS)' == 'Windows_NT' " TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <SourceFile ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
+      <DestinationFile ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
+      <Replacements ParameterType="System.String[]" />
+      <ReplacementFilePath ParameterType="System.String" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Class" Language="cs" Source="..\..\..\build-tools\xa-prep-tasks\Xamarin.Android.BuildTools.PrepTasks\ReplaceFileContents.cs"/>
+    </Task>
+  </UsingTask>
+  <UsingTask TaskName="ReplaceFileContents" Condition=" '$(OS)' != 'Windows_NT' " TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <SourceFile ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
+      <DestinationFile ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
+      <Replacements ParameterType="System.String[]" />
+      <ReplacementFilePath ParameterType="System.String" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Class" Language="cs" Source="../../../build-tools/xa-prep-tasks/Xamarin.Android.BuildTools.PrepTasks/ReplaceFileContents.cs"/>
+    </Task>
+  </UsingTask>
+
+  <Target Name="GenerateSourceFiles"
+          BeforeTargets="BeforeCompile">
+    <PropertyGroup>
+      <BuildInfoInFile>BuildInfo.cs.in</BuildInfoInFile>
+      <BuildInfoOutFile>$(IntermediateOutputPath)\BuildInfo.Generated.cs</BuildInfoOutFile>
+    </PropertyGroup>
+
+    <ReplaceFileContents
+        SourceFile="$(BuildInfoInFile)"
+        DestinationFile="$(BuildInfoOutFile)"
+        Replacements="@XA_SOURCE_ROOT@=$([System.IO.Path]::GetFullPath ('$(MSBuildThisFileDirectory)..\..\..'));@XA_PRODUCT_VERSION@=$(ProductVersion)" />
+  </Target>
+</Project>

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 
+using Xamarin.Android.Shared;
+
 namespace Xamarin.Android.Prepare
 {
 	partial class LinuxUbuntuCommon : LinuxDebianCommon

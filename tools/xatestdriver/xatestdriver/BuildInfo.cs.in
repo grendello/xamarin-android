@@ -1,0 +1,12 @@
+namespace Xamarin.Android.Tests.Driver
+{
+	static class BuildPaths
+	{
+		public const string XamarinAndroidSourceRoot = @"@XA_SOURCE_ROOT@";
+	}
+
+	partial class BuildInfo
+	{
+		public const string XAVersion = "@XA_PRODUCT_VERSION@";
+	}
+}

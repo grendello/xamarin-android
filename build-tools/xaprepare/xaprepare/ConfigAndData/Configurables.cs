@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
+using Xamarin.Android.Shared;
+
 namespace Xamarin.Android.Prepare
 {
 	// This class exists so that nobody has to jump around the source in order to find an URL to modify, a setting to

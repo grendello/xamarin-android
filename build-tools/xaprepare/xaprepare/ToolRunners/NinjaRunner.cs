@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
+using Xamarin.Android.Shared;
+
 namespace Xamarin.Android.Prepare
 {
 	partial class NinjaRunner : ToolRunner

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
+using Xamarin.Android.Shared;
+
 namespace Xamarin.Android.Prepare
 {
 	static class DictionaryOfProgramVersionParser_Extensions

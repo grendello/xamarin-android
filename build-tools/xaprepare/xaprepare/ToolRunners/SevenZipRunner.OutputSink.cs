@@ -1,6 +1,8 @@
 using System;
 using System.Text;
 
+using Xamarin.Android.Shared;
+
 namespace Xamarin.Android.Prepare
 {
 	partial class SevenZipRunner

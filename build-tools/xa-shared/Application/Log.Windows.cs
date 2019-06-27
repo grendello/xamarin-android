@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Xamarin.Android.Prepare
+namespace Xamarin.Android.Shared
 {
 	partial class Log
 	{

@@ -36,6 +36,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <SharedSourcesRootDir>..\..\..\build-tools\xa-shared</SharedSourcesRootDir>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -53,6 +54,8 @@
   <ItemGroup>
     <Compile Include="$(IntermediateOutputPath)\BuildInfo.Generated.cs" />
     <Compile Include="$(IntermediateOutputPath)\Properties.Defaults.cs" />
+    <Compile Include="$(SharedSourcesRootDir)\Application\Log.cs" />
+    <Compile Include="$(SharedSourcesRootDir)\Application\LoggingVerbosity.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Application\Abi.cs" />
     <Compile Include="Application\Abi.Bitness.cs" />
@@ -83,8 +86,7 @@
     <Compile Include="Application\KnownConditions.cs" />
     <Compile Include="Application\KnownProperties.cs" />
     <Compile Include="Application\LlvmRuntime.cs" />
-    <Compile Include="Application\Log.cs" />
-    <Compile Include="Application\LoggingVerbosity.cs" />
+    <Compile Include="Application\Log.Configure.cs" />
     <Compile Include="Application\MonoCrossRuntime.cs" />
     <Compile Include="Application\MonoHostRuntime.cs" />
     <Compile Include="Application\MonoJitRuntime.cs" />
@@ -181,8 +183,8 @@
     <Compile Include="Application\RefreshableComponent.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(OS)' == 'Unix' ">
+    <Compile Include="$(SharedSourcesRootDir)\Application\Log.Unix.cs" />
     <Compile Include="Application\EssentialTools.Unix.cs" />
-    <Compile Include="Application\Log.Unix.cs" />
     <Compile Include="Application\Utilities.Unix.cs" />
     <Compile Include="ConfigAndData\Configurables.Unix.cs" />
     <Compile Include="ConfigAndData\Runtimes.Unix.cs" />
@@ -244,12 +246,12 @@
     <Compile Include="ToolRunners\PkgutilRunner.MacOS.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(HostOS)' == 'Windows' ">
+    <Compile Include="$(SharedSourcesRootDir)\Application\Log.Windows.cs" />
     <Compile Include="..\..\..\tools\vswhere\MSBuildLocator.cs" />
     <Compile Include="..\..\..\tools\vswhere\VisualStudioInstance.cs" />
     <Compile Include="Application\Context.Windows.cs" />
     <Compile Include="Application\DetermineWindowsVersion.Windows.cs" />
     <Compile Include="Application\LlvmRuntime.Windows.cs" />
-    <Compile Include="Application\Log.Windows.cs" />
     <Compile Include="Application\MonoCrossRuntime.Windows.cs" />
     <Compile Include="ConfigAndData\Runtimes.Windows.cs" />
     <Compile Include="Application\Utilities.Windows.cs" />

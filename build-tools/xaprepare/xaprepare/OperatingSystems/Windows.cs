@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
+using Xamarin.Android.Shared;
 using Xamarin.Android.Tools.VSWhere;
 
 namespace Xamarin.Android.Prepare

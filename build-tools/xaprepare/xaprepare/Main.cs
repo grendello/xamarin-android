@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Mono.Options;
+using Xamarin.Android.Shared;
 
 namespace Xamarin.Android.Prepare
 {

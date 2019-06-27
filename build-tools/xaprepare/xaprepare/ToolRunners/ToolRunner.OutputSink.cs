@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Text;
 
+using Xamarin.Android.Shared;
+
 namespace Xamarin.Android.Prepare
 {
 	abstract partial class ToolRunner

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProjectGuid>{B1B606D8-2D79-45D7-AA05-9A8954A7A234}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Xamarin.Android.Tests.Driver</RootNamespace>
+    <AssemblyName>xatestdriver</AssemblyName>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+  </PropertyGroup>
+  <Import Project="..\..\..\Configuration.props" />
+  <Import Project="xatestdriver.targets" Condition=" $(MSBuildToolsPath.IndexOf('omnisharp')) &lt; 0 " />
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ExternalConsole>true</ExternalConsole>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ExternalConsole>true</ExternalConsole>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SharedSourcesRootDir>..\..\..\build-tools\xa-shared</SharedSourcesRootDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(IntermediateOutputPath)\BuildInfo.Generated.cs" />
+    <Compile Include="Main.cs" />
+    <Compile Include="Tests.cs" />
+    <Compile Include="$(SharedSourcesRootDir)\Application\Log.cs" />
+    <Compile Include="$(SharedSourcesRootDir)\Application\LoggingVerbosity.cs" />
+    <Compile Include="Application\AabDispatcher.cs" />
+    <Compile Include="Application\AndroidDeviceDispatcher.cs" />
+    <Compile Include="Application\ApkDispatcher.cs" />
+    <Compile Include="Application\Context.cs" />
+    <Compile Include="Application\Dispatcher.cs" />
+    <Compile Include="Application\HostUnitDispatcher.cs" />
+    <Compile Include="Application\Log.Configure.cs" />
+    <Compile Include="Application\NUnitDispatcher.cs" />
+    <Compile Include="Application\XUnitDispatcher.cs" />
+    <Compile Include="Application\TestItem.cs" />
+    <Compile Include="Application\TestType.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(OS)' == 'Unix' ">
+    <Compile Include="$(SharedSourcesRootDir)\Application\Log.Unix.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(HostOS)' == 'Windows' ">
+    <Compile Include="$(SharedSourcesRootDir)\Application\Log.Windows.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Mono.Options">
+      <Version>5.3.0.1</Version>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>

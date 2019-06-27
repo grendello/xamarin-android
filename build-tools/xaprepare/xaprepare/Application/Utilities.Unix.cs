@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 
 using Mono.Unix.Native;
+using Xamarin.Android.Shared;
 
 namespace Xamarin.Android.Prepare
 {

@@ -1,6 +1,8 @@
 using System;
 using System.Text.RegularExpressions;
 
+using Xamarin.Android.Shared;
+
 namespace Xamarin.Android.Prepare
 {
 	/// <summary>
