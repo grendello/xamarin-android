@@ -21,6 +21,7 @@ namespace Xamarin.Android.Tests.Driver
 			public bool RunTests          { get; set; } = true;
 			public string ModeName        { get; set; }
 			public string PolicyName      { get; set; }
+			public string Configuration   { get; set; }
 
 			public bool ShowHelp          { get; set; }
 
@@ -90,12 +91,13 @@ namespace Xamarin.Android.Tests.Driver
 				{"u|unit", "Execute unit (both NUnit and xUnit) tests", v => parsedOptions.EnableHostTests ()},
 				"",
 				"Operations:",
-				{"l|list:", "List: everything without any value passed or pass any string of letters shown here in brackets: [a]ll, [m]odes, [p]olicies, [t]ests", v => ParseListOptions (v, parsedOptions) },
-				{"r|run", "Run tests (the default operation)", v => parsedOptions.RunTests = true },
+				{"l|list:", "List: everything without any value passed or pass any string of letters shown here in brackets: [a]ll, [m]odes, [p]olicies, [t]ests", v => ParseListOptions (v, parsedOptions)},
+				{"r|run", "Run tests (the default operation)", v => parsedOptions.RunTests = true},
 				"",
 				"Other:",
-				{"m|mode=", "Use the named {MODE}", v => parsedOptions.ModeName = v },
-				{"p|policy=", "Use the named {POLICY}", v => parsedOptions.PolicyName = v },
+				{"m|mode=", "Use the named {MODE}", v => parsedOptions.ModeName = v},
+				{"p|policy=", "Use the named {POLICY}", v => parsedOptions.PolicyName = v},
+				{"c|configuration=", $"Run tests in the specified {{CONFIGURATION}} (Default: {Context.Instance.Configuration})", v => parsedOptions.Configuration = v},
 				"",
 				{"h|help", "Show help", v => parsedOptions.ShowHelp = true},
 			};
@@ -127,63 +129,80 @@ namespace Xamarin.Android.Tests.Driver
 		{
 			Context.Instance.Banner ("List");
 
+			var tests = new Tests (Context.Instance);
+
 			bool first = true;
-			List (parsedOptions, ListModes, ref first);
-			List (parsedOptions, ListPolicies, ref first);
-			List (parsedOptions, ListTestSuites, ref first);
+			List (tests, parsedOptions, ListModes, ref first);
+			List (tests, parsedOptions, ListPolicies, ref first);
+			List (tests, parsedOptions, ListTestSuites, ref first);
 		}
 
-		static void List (ParsedOptions parsedOptions, Func<ParsedOptions, bool> func, ref bool first)
+		static void List (Tests tests, ParsedOptions parsedOptions, Func<Tests, ParsedOptions, bool> func, ref bool first)
 		{
 			if (!first)
 				Log.Instance.StatusLine ();
-			if (func (parsedOptions))
+			if (func (tests, parsedOptions))
 				first = false;
 		}
 
-		static bool ListModes (ParsedOptions parsedOptions)
+		static bool ListModes (Tests tests, ParsedOptions parsedOptions)
 		{
 			if (!parsedOptions.ListModes && !parsedOptions.ListAll)
 				return false;
 
 			Log.Instance.StatusLine ("Modes");
-			foreach (Mode mode in Tests.Modes) {
-				string defaultMode = mode == Tests.DefaultMode ? " [default]" : null;
-				Log.Instance.Status ($"  {Context.Instance.Characters.Bullet} {mode.Name}", ConsoleColor.White);
-				if (mode.Aliases != null) {
-					Log.Instance.Status ($" / {MakeAliases (mode.Aliases)}", ConsoleColor.White);
-				}
-				Log.Instance.StatusLine (defaultMode, ConsoleColor.Green);
-				Log.Instance.StatusLine ($"    {mode.Description}");
+			foreach (Mode mode in tests.Modes) {
+				PrintInfo (mode, mode == tests.DefaultMode ? " [default]" : null);
 			}
 
 			return true;
 		}
 
-		static bool ListPolicies (ParsedOptions parsedOptions)
+		static bool ListPolicies (Tests tests, ParsedOptions parsedOptions)
 		{
 			if (!parsedOptions.ListPolicies && !parsedOptions.ListAll)
 				return false;
 
 			Log.Instance.StatusLine ("Policies");
-			foreach (Policy policy in Tests.Policies) {
-				Log.Instance.Status ($"  {Context.Instance.Characters.Bullet} {policy.Name}", ConsoleColor.White);
-				if (policy.Aliases != null) {
-					Log.Instance.Status ($" / {MakeAliases (policy.Aliases)}", ConsoleColor.White);
-				}
-				Log.Instance.StatusLine ();
-				Log.Instance.StatusLine ($"    {policy.Description}");
+			foreach (Policy policy in tests.Policies) {
+				PrintInfo (policy);
 			}
 
 			return true;
 		}
 
-		static bool ListTestSuites (ParsedOptions parsedOptions)
+		static bool ListTestSuites (Tests tests, ParsedOptions parsedOptions)
 		{
 			if (!parsedOptions.ListTestSuites && !parsedOptions.ListAll)
 				return false;
 
+			Log.Instance.StatusLine ("Tests");
+			ListTests ("unit", tests.NUnitTests);
+			ListTests ("unit", tests.XunitTests);
+			ListTests ("device", tests.ApkTests);
+			ListTests ("device", tests.AabTests);
+
 			return true;
+
+			void ListTests (string kind, List<TestItem> testList)
+			{
+				if (testList == null || testList.Count == 0)
+					return;
+
+				foreach (TestItem ti in testList) {
+					PrintInfo (ti, $" [{kind}]");
+				}
+			}
+		}
+
+		static void PrintInfo (AppObject ao, string firstLineTail = null)
+		{
+			Log.Instance.Status ($"  {Context.Instance.Characters.Bullet} {ao.Name}", ConsoleColor.White);
+			if (ao.Aliases != null) {
+				Log.Instance.Status ($" / {MakeAliases (ao.Aliases)}", ConsoleColor.White);
+			}
+			Log.Instance.StatusLine (firstLineTail, ConsoleColor.Green);
+			Log.Instance.StatusLine ($"    {ao.Description}");
 		}
 
 		static string MakeAliases (IList<string> list)

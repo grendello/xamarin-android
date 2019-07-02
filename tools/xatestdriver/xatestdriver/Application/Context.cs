@@ -110,6 +110,8 @@ namespace Xamarin.Android.Tests.Driver
 			}
 		}
 
+		public Tests Tests { get; private set; }
+
 		static Context ()
 		{
 			Instance = new Context ();
@@ -129,6 +131,7 @@ namespace Xamarin.Android.Tests.Driver
 		public bool Init ()
 		{
 			characters = Characters.Create (NoEmoji, DullMode, CanConsoleUseUnicode);
+			Tests = new Tests (this);
 
 			return true;
 		}

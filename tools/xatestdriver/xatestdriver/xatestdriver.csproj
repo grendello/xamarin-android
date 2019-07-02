@@ -50,8 +50,12 @@
     <Compile Include="Main.cs" />
     <Compile Include="Tests.cs" />
     <Compile Include="Application\AabDispatcher.cs" />
+    <Compile Include="Application\AabTestItem.cs" />
     <Compile Include="Application\AndroidDeviceDispatcher.cs" />
+    <Compile Include="Application\AotApkTestItem.cs" />
     <Compile Include="Application\ApkDispatcher.cs" />
+    <Compile Include="Application\ApkTestItem.cs" />
+    <Compile Include="Application\AppObject.cs" />
     <Compile Include="Application\Context.cs" />
     <Compile Include="Application\DeviceTestItem.cs" />
     <Compile Include="Application\Dispatcher.cs" />
@@ -61,11 +65,13 @@
     <Compile Include="Application\Log.Configure.cs" />
     <Compile Include="Application\Mode.cs" />
     <Compile Include="Application\NUnitDispatcher.cs" />
+    <Compile Include="Application\NUnitTestItem.cs" />
     <Compile Include="Application\Policy.cs" />
     <Compile Include="Application\TestItem.cs" />
     <Compile Include="Application\TestType.cs" />
     <Compile Include="Application\UnitTestItem.cs" />
     <Compile Include="Application\XUnitDispatcher.cs" />
+    <Compile Include="Application\XUnitTestItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(OS)' == 'Unix' ">

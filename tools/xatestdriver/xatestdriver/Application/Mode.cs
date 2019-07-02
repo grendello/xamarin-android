@@ -16,25 +16,8 @@ namespace Xamarin.Android.Tests.Driver
 	///   <seealso cref="Dispatcher"/>
 	///   <seealso cref="Policy"/>
 	/// </summary>
-	class Mode
+	class Mode : AppObject
 	{
-		/// <summary>
-		///   A short description of the mode.
-		/// </summary>
-		public string Description                     { get; }
-
-		/// <summary>
-		///   Short mode name. Should not contain spaces or any characters that may require quoting when used
-		///   in the operating system shell. Name will be used on command line to select the execution mode.
-		/// </summary>
-		public string Name                            { get; }
-
-		/// <summary>
-		///   Optional set of <see cref="Name"/> aliases that can be used when selecting mode on the command
-		///   line.
-		/// </summary>
-		public IList<string> Aliases                  { get; }
-
 		/// <summary>
 		///   Non-empty list of non-null host device test dispatchers
 		/// </summary>
@@ -50,28 +33,12 @@ namespace Xamarin.Android.Tests.Driver
 		/// </summary>
 		public Policy Policy                          { get; set; }
 
-		public Mode (string name, string description, Policy defaultPolicy, List<Dispatcher> deviceTestDispatchers, List<Dispatcher> unitTestDispatchers, List<string> aliases = null)
+		public Mode (string name, string description, Policy defaultPolicy, List<Dispatcher> deviceTestDispatchers, List<Dispatcher> unitTestDispatchers, IList<string> aliases = null)
+			: base (name, description, aliases)
 		{
-			name = name?.Trim ();
-			if (String.IsNullOrEmpty (name))
-				throw new ArgumentException ("must not be null or empty", nameof (name));
-
-			description = description?.Trim ();
-			if (String.IsNullOrEmpty (description))
-				throw new ArgumentException ("must not be null or empty", nameof (description));
-
-			Name = name;
-			Description = description;
-
 			Policy = defaultPolicy ?? throw new ArgumentNullException (nameof (defaultPolicy));
 			DeviceTestDispatchers = EnsureValidDispatchers (deviceTestDispatchers, nameof (deviceTestDispatchers));
 			UnitTestDispatchers = EnsureValidDispatchers (unitTestDispatchers, nameof (unitTestDispatchers));
-
-			var nonEmptyAliases = aliases.Where (s => !String.IsNullOrEmpty (s)).Select (s => s.Trim ()).Where (s => !String.IsNullOrEmpty (s)).ToList ();
-			if (nonEmptyAliases.Count == 0)
-				return;
-
-			Aliases = nonEmptyAliases.AsReadOnly ();
 		}
 
 		IList<Dispatcher> EnsureValidDispatchers (List<Dispatcher> dispatchers, string argName)
