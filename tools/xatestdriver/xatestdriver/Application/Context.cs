@@ -110,6 +110,11 @@ namespace Xamarin.Android.Tests.Driver
 			}
 		}
 
+		/// <summary>
+		///   Run tests in the headless version of the Android emulator, if available
+		/// </summary>
+		public bool UseHeadlessEmulator { get; set; } = Configurables.Defaults.UseHeadlessEmulator;
+
 		public Tests Tests { get; private set; }
 
 		static Context ()

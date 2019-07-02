@@ -4,7 +4,7 @@ namespace Xamarin.Android.Tests.Driver
 {
 	class AabTestItem : DeviceTestItem
 	{
-		protected AabTestItem (string packagePath, string name, string description, IList<string> aliases = null)
+		public AabTestItem (string packagePath, string name, string description, IList<string> aliases = null)
 			: base (packagePath, name, description, aliases)
 		{}
 	}

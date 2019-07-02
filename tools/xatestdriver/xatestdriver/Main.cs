@@ -10,23 +10,32 @@ namespace Xamarin.Android.Tests.Driver
 	{
 		sealed class ParsedOptions
 		{
-			public bool? EnableApkTests   { get; set; }
-			public bool? EnableAabTests   { get; set; }
-			public bool? EnableNUnitTests { get; set; }
-			public bool? EnableXUnitTests { get; set; }
-			public bool ListAll           { get; set; }
-			public bool ListModes         { get; set; }
-			public bool ListPolicies      { get; set; }
-			public bool ListTestSuites    { get; set; }
-			public bool RunTests          { get; set; } = true;
-			public string ModeName        { get; set; }
-			public string PolicyName      { get; set; }
-			public string Configuration   { get; set; }
+			static readonly char[] listSeparators = new char[] { ',' };
 
-			public bool ShowHelp          { get; set; }
+			List<string> testSuiteNames;
+			List<string> testNames;
 
-			public bool AnyTestsSelected  => EnableApkTests.HasValue || EnableAabTests.HasValue || EnableNUnitTests.HasValue || EnableXUnitTests.HasValue;
-			public bool ListSomething     => ListAll || ListModes || ListPolicies || ListTestSuites;
+			public bool? EnableApkTests        { get; set; }
+			public bool? EnableAabTests        { get; set; }
+			public bool? EnableNUnitTests      { get; set; }
+			public bool? EnableXUnitTests      { get; set; }
+			public bool ListAll                { get; set; }
+			public bool ListModes              { get; set; }
+			public bool ListPolicies           { get; set; }
+			public bool ListTestSuites         { get; set; }
+			public bool RunTests               { get; set; } = true;
+			public string ModeName             { get; set; }
+			public string PolicyName           { get; set; }
+			public string Configuration        { get; set; }
+			public string ResponseFile         { get; set; }
+			public bool? UseHeadlessEmulator   { get; set; } = Configurables.Defaults.UseHeadlessEmulator;
+
+			public bool ShowHelp               { get; set; }
+
+			public List<string> TestSuiteNames => testSuiteNames;
+			public List<string> TestNames      => testNames;
+			public bool AnyTestsSelected       => EnableApkTests.HasValue || EnableAabTests.HasValue || EnableNUnitTests.HasValue || EnableXUnitTests.HasValue;
+			public bool ListSomething          => ListAll || ListModes || ListPolicies || ListTestSuites;
 
 			public void EnableAllTests ()
 			{
@@ -46,6 +55,28 @@ namespace Xamarin.Android.Tests.Driver
 			{
 				EnableNUnitTests = true;
 				EnableXUnitTests = true;
+			}
+
+			public void AddTestSuiteNames (string commaSeparatedEntries)
+			{
+				AddToList (ref testSuiteNames, commaSeparatedEntries);
+			}
+
+			public void AddTestNames (string commaSeparatedEntries)
+			{
+				AddToList (ref testNames, commaSeparatedEntries);
+			}
+
+			void AddToList (ref List<string> list, string commaSeparatedEntries)
+			{
+				commaSeparatedEntries = commaSeparatedEntries?.Trim ();
+				if (String.IsNullOrEmpty (commaSeparatedEntries))
+					return;
+
+				if (list == null)
+					list = new List<string> ();
+
+				list.AddRange (commaSeparatedEntries.Split (listSeparators, StringSplitOptions.RemoveEmptyEntries));
 			}
 		}
 
@@ -72,13 +103,15 @@ namespace Xamarin.Android.Tests.Driver
 			var parsedOptions = new ParsedOptions ();
 
 			var opts = new OptionSet {
-				"Usage: xatestdriver [OPTIONS] <TestSelection> [<Operation>]...",
+				"Usage: xatestdriver [OPTIONS] <TestSelection> [<Operation>]... [@ResponseFilePath]",
 				$"Xamarin.Android v{BuildInfo.XAVersion} test driver",
 				"",
 				"At least one of the test selection options must be specified.",
 				"",
 				"Test selection:",
 				{"A|all", "Execute all tests", v => parsedOptions.EnableAllTests ()},
+				{"s|suite=", "Execute tests from the named {SUITE} only, a comma-separated list. Can be used multiple times.", v => parsedOptions.AddTestSuiteNames(v)},
+				{"t|test=", "Run only the indicated tests. {LIST} is comma-separated. See the documentation for entry format. Can be used multiple times", v => parsedOptions.AddTestNames (v)},
 				"",
 				"On device tests:",
 				{"a|apk", "Execute APK tests", v => parsedOptions.EnableApkTests = true},
@@ -98,6 +131,9 @@ namespace Xamarin.Android.Tests.Driver
 				{"m|mode=", "Use the named {MODE}", v => parsedOptions.ModeName = v},
 				{"p|policy=", "Use the named {POLICY}", v => parsedOptions.PolicyName = v},
 				{"c|configuration=", $"Run tests in the specified {{CONFIGURATION}} (Default: {Context.Instance.Configuration})", v => parsedOptions.Configuration = v},
+				{"he|no-he|headless-emulator|no-headless-emulator",
+				 $"Turn off (the no- prefix) or on using the Android headless emulator, if available. (Default: {Configurables.Defaults.UseHeadlessEmulator})",
+				 n => parsedOptions.UseHeadlessEmulator = ParseOnOffOption (n, Configurables.Defaults.UseHeadlessEmulator)},
 				"",
 				{"h|help", "Show help", v => parsedOptions.ShowHelp = true},
 			};
@@ -107,6 +143,11 @@ namespace Xamarin.Android.Tests.Driver
 				opts.WriteOptionDescriptions (Console.Out);
 				return 0;
 			}
+
+			if (parsedOptions.UseHeadlessEmulator.HasValue)
+				Context.Instance.UseHeadlessEmulator = parsedOptions.UseHeadlessEmulator.Value;
+			if (!String.IsNullOrEmpty (parsedOptions.Configuration))
+				Context.Instance.Configuration = parsedOptions.Configuration;
 
 			if (!Context.Instance.Init ()) {
 				Log.Instance.ErrorLine ("Failed to initialize application context");
@@ -123,6 +164,15 @@ namespace Xamarin.Android.Tests.Driver
 			}
 
 			return 0;
+		}
+
+		static bool ParseOnOffOption (string name, bool defaultValue)
+		{
+			name = name?.Trim ();
+			if (String.IsNullOrEmpty (name))
+				return defaultValue;
+
+			return !name.StartsWith ("no-", StringComparison.OrdinalIgnoreCase);
 		}
 
 		static void ListSomething (ParsedOptions parsedOptions)
@@ -177,8 +227,8 @@ namespace Xamarin.Android.Tests.Driver
 				return false;
 
 			Log.Instance.StatusLine ("Tests");
-			ListTests ("unit", tests.NUnitTests);
-			ListTests ("unit", tests.XunitTests);
+			ListTests ("host", tests.NUnitTests);
+			ListTests ("host", tests.XunitTests);
 			ListTests ("device", tests.ApkTests);
 			ListTests ("device", tests.AabTests);
 

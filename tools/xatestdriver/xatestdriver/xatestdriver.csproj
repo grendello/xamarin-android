@@ -56,6 +56,7 @@
     <Compile Include="Application\ApkDispatcher.cs" />
     <Compile Include="Application\ApkTestItem.cs" />
     <Compile Include="Application\AppObject.cs" />
+    <Compile Include="Application\Configurables.cs" />
     <Compile Include="Application\Context.cs" />
     <Compile Include="Application\DeviceTestItem.cs" />
     <Compile Include="Application\Dispatcher.cs" />

@@ -60,7 +60,7 @@ namespace Xamarin.Android.Tests.Driver
 					name: "Xamarin.Android.Build.Tests",
 					description: "Xamarin.Android MSBuild unit tests",
 					aliases: new List<string> { "XABT", "build" }
-				),
+				) { AlwaysRunAlone = true },
 
 				new NUnitTestItem (
 					testAssemblyPath: Path.Combine (testsDir, "Xamarin.Android.MakeBundle-UnitTests.dll"),
@@ -75,9 +75,70 @@ namespace Xamarin.Android.Tests.Driver
 			};
 
 			ApkTests = new List<TestItem> {
+				new ApkTestItem (
+					packagePath: Path.Combine (testsDir, "Mono.Android_Tests-Signed.apk"),
+					name: "Mono.Android_Tests",
+					description: "Mono.Android on-device tests",
+					aliases: new List<string> {"mono-android", "ma"}
+				),
+
+				new ApkTestItem (
+					packagePath: Path.Combine (testsDir, "Mono.Android_TestsMultiDex.apk"),
+					name: "Mono.Android_TestsMultiDex",
+					description: "Mono.Android multi-dex on-device tests",
+					aliases: new List<string> {"multi-dex"}
+				),
+
+				new ApkTestItem (
+					packagePath: Path.Combine (testsDir, "Xamarin.Android.Bcl_Tests-Signed.apk"),
+					"Xamarin.Android.Bcl_Tests",
+					"Xamarin.Android on-device BCL tests",
+					new List<string> {"bcl", "xa-bcl"}
+				),
+
+				new ApkTestItem (
+					packagePath: Path.Combine (testsDir, "Xamarin.Android.EmbeddedDSO_Test-Signed.apk"),
+					name: "Xamarin.Android.EmbeddedDSO_Test",
+					description: "Xamarin.Android on-device embedded DSO tests",
+					aliases: new List<string> {"dev-embedded-dso", "dev-edso"}
+				),
+
+				new ApkTestItem (
+					packagePath: Path.Combine (testsDir, "Xamarin.Android.JcwGen_Tests-Signed.apk"),
+					name: "Xamarin.Android.JcwGen_Tests",
+					description: "Xamarin.Android Java Callable Wrappers generator on-device tests",
+					aliases: new List<string> {"jcw-gen", "jcwgen"}
+				),
+
+				new ApkTestItem (
+					packagePath: Path.Combine (testsDir, "Xamarin.Android.Locale_Tests-Signed.apk"),
+					name: "Xamarin.Android.Locale_Tests",
+					description: "Xamarin.Android on-device locale tests",
+					aliases: new List<string> {"locale"}
+				),
+
+				new ApkTestItem (
+					packagePath: Path.Combine (testsDir, "Xamarin.Android.MakeBundle_Tests-Signed.apk"),
+					name: "Xamarin.Android.MakeBundle_Tests",
+					description: "Xamarin.Android makebundle tests",
+					aliases: new List<string> {"dev-mkbundle", "dev-make-bundle"}
+				),
+
+				new ApkTestItem (
+					packagePath: Path.Combine (testsDir, "Xamarin.Forms_Performance_Integration-Signed.apk"),
+					name: "Xamarin.Forms_Performance_Integration",
+					description: "Xamarin.Forms on-device performance tests",
+					aliases: new List<string> {"perf", "xf-perf"}
+				) { AlwaysRunAlone = true, ForceRestartEmulator = true },
 			};
 
 			AabTests = new List<TestItem> {
+				new AabTestItem (
+					packagePath: Path.Combine (testsDir, "Mono.Android_TestsAppBundle-Signed.aab"),
+					name: "Mono.Android_TestsAppBundle",
+					description: "Xamarin.Android on-device app bundle (AAB) tests",
+					aliases: new List<string> {"aab", "app-bundle"}
+				),
 			};
 
 			// Dispatchers
