@@ -2,9 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Xamarin.Android.Prepare
+namespace Xamarin.Android.Shared
 {
-	partial class Properties : AppObject, IEnumerable <KeyValuePair<string,string>>
+	partial class Properties : IEnumerable <KeyValuePair<string,string>>
 	{
 		SortedDictionary <string, string> properties = new SortedDictionary <string, string> (StringComparer.Ordinal);
 

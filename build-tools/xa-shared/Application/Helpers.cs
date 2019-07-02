@@ -47,5 +47,23 @@ namespace Xamarin.Android.Shared
 				return true; // Windows may throw here, but it also means we're not redirected
 			}
 		}
+
+		public static void ResetConsole ()
+		{
+			try {
+				Console.CursorVisible = true;
+				Console.ResetColor ();
+			} catch {
+				// Ignore
+			}
+		}
+
+		public static void PrintException (Exception ex)
+		{
+			Log.Instance.ErrorLine (showSeverity: false);
+			Log.Instance.ErrorLine (ex.Message, showSeverity: false);
+			Log.Instance.ErrorLine (ex.ToString (), showSeverity: false);
+			Log.Instance.ErrorLine (showSeverity: false);
+		}
 	}
 }

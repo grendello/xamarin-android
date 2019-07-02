@@ -1,6 +1,8 @@
 using System;
 
-namespace Xamarin.Android.Prepare
+using Xamarin.Android.Prepare;
+
+namespace Xamarin.Android.Shared
 {
 	partial class Properties
 	{

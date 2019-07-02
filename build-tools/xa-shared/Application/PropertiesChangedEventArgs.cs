@@ -1,6 +1,6 @@
 using System;
 
-namespace Xamarin.Android.Prepare
+namespace Xamarin.Android.Shared
 {
 	class PropertiesChangedEventArgs : EventArgs
 	{

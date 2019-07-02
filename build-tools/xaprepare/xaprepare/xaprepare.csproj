@@ -59,6 +59,9 @@
     <Compile Include="$(SharedSourcesRootDir)\Application\Helpers.cs" />
     <Compile Include="$(SharedSourcesRootDir)\Application\Log.cs" />
     <Compile Include="$(SharedSourcesRootDir)\Application\LoggingVerbosity.cs" />
+    <Compile Include="$(SharedSourcesRootDir)\Application\Properties.cs" />
+    <Compile Include="$(SharedSourcesRootDir)\Application\PropertiesChangedEventArgs.cs" />
+    <Compile Include="$(SharedSourcesRootDir)\Application\SharedContext.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Application\Abi.cs" />
     <Compile Include="Application\Abi.Bitness.cs" />
@@ -98,8 +101,6 @@
     <Compile Include="Application\ProcessStandardStreamWrapper.cs" />
     <Compile Include="Application\Program.cs" />
     <Compile Include="Application\ProgramVersionParser.cs" />
-    <Compile Include="Application\Properties.cs" />
-    <Compile Include="Application\PropertiesChangedEventArgs.cs" />
     <Compile Include="Application\RegexProgramVersionParser.cs" />
     <Compile Include="Application\RuleGeneratorDelegate.cs" />
     <Compile Include="Application\Runtime.cs" />

@@ -14,11 +14,9 @@ namespace Xamarin.Android.Prepare
 	/// </summary>
 	partial class Context : AppObject
 	{
-		const ConsoleColor BannerColor                        = ConsoleColor.DarkGreen;
-
-		public const ConsoleColor SuccessColor                = ConsoleColor.Green;
-		public const ConsoleColor FailureColor                = ConsoleColor.Red;
-		public const ConsoleColor WarningColor                = ConsoleColor.Yellow;
+		public const ConsoleColor SuccessColor                = SharedContext.SuccessColor;
+		public const ConsoleColor FailureColor                = SharedContext.FailureColor;
+		public const ConsoleColor WarningColor                = SharedContext.WarningColor;
 
 		static readonly string XASolutionFilePath             = Path.Combine (BuildPaths.XamarinAndroidSourceRoot, "Xamarin.Android.sln");
 		static readonly string XATestsSolutionFilePath        = Path.Combine (BuildPaths.XamarinAndroidSourceRoot, "Xamarin.Android-Tests.sln");
@@ -102,7 +100,7 @@ namespace Xamarin.Android.Prepare
 		/// <summary>
 		///   Time stamp of the current build
 		/// </summary>
-		public string BuildTimeStamp                   { get; }
+		public string BuildTimeStamp                   => SharedContext.BuildTimeStamp;
 
 		/// <summary>
 		///   A collection of all the methods to obtain version numbers from programs. See <see cref="t:VersionFetchers" />
@@ -346,7 +344,6 @@ namespace Xamarin.Android.Prepare
 			Properties.PropertiesChanged += PropertiesChanged;
 
 			var now = DateTime.Now;
-			BuildTimeStamp = $"{now.Year}{now.Month:00}{now.Day:00}T{now.Hour:00}{now.Minute:00}{now.Second:00}";
 			mainLogFilePath = GetLogFilePath (null, true);
 			Log.Instance.SetLogFile (mainLogFilePath);
 
@@ -819,14 +816,7 @@ namespace Xamarin.Android.Prepare
 		/// </summary>
 		public void Banner (string text)
 		{
-			if (LoggingVerbosity <= LoggingVerbosity.Quiet)
-				return;
-
-			Log.StatusLine ();
-			Log.StatusLine ("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=", BannerColor);
-			Log.StatusLine (text, BannerColor);
-			Log.StatusLine ("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=", BannerColor);
-			Log.StatusLine ();
+			SharedContext.Banner (LoggingVerbosity, text);
 		}
 
 		string GetLogDirectory ()

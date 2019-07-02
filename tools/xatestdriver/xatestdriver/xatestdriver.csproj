@@ -38,24 +38,34 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(IntermediateOutputPath)\BuildInfo.Generated.cs" />
-    <Compile Include="Main.cs" />
-    <Compile Include="Tests.cs" />
+    <Compile Include="$(IntermediateOutputPath)\Properties.Defaults.cs" />
     <Compile Include="$(SharedSourcesRootDir)\Application\Characters.cs" />
     <Compile Include="$(SharedSourcesRootDir)\Application\ExecutionMode.cs" />
     <Compile Include="$(SharedSourcesRootDir)\Application\Helpers.cs" />
     <Compile Include="$(SharedSourcesRootDir)\Application\Log.cs" />
     <Compile Include="$(SharedSourcesRootDir)\Application\LoggingVerbosity.cs" />
+    <Compile Include="$(SharedSourcesRootDir)\Application\Properties.cs" />
+    <Compile Include="$(SharedSourcesRootDir)\Application\PropertiesChangedEventArgs.cs" />
+    <Compile Include="$(SharedSourcesRootDir)\Application\SharedContext.cs" />
+    <Compile Include="Main.cs" />
+    <Compile Include="Tests.cs" />
     <Compile Include="Application\AabDispatcher.cs" />
     <Compile Include="Application\AndroidDeviceDispatcher.cs" />
     <Compile Include="Application\ApkDispatcher.cs" />
     <Compile Include="Application\Context.cs" />
+    <Compile Include="Application\DeviceTestItem.cs" />
     <Compile Include="Application\Dispatcher.cs" />
+    <Compile Include="Application\Executor.cs" />
     <Compile Include="Application\HostUnitDispatcher.cs" />
+    <Compile Include="Application\KnownProperties.cs" />
     <Compile Include="Application\Log.Configure.cs" />
+    <Compile Include="Application\Mode.cs" />
     <Compile Include="Application\NUnitDispatcher.cs" />
-    <Compile Include="Application\XUnitDispatcher.cs" />
+    <Compile Include="Application\Policy.cs" />
     <Compile Include="Application\TestItem.cs" />
     <Compile Include="Application\TestType.cs" />
+    <Compile Include="Application\UnitTestItem.cs" />
+    <Compile Include="Application\XUnitDispatcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(OS)' == 'Unix' ">

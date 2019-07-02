@@ -1,0 +1,22 @@
+using System;
+
+using Xamarin.Android.Tests.Driver;
+
+namespace Xamarin.Android.Shared
+{
+	partial class Properties
+	{
+		void InitDefaults ()
+		{
+			properties.Add (KnownProperties.Configuration,                       StripQuotes ("@Configuration@"));
+		}
+
+		string StripQuotes (string input)
+		{
+			if (String.IsNullOrEmpty (input))
+				return String.Empty;
+
+			return input.Trim ('"');
+		}
+	}
+}

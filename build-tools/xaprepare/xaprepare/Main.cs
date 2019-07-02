@@ -41,34 +41,16 @@ namespace Xamarin.Android.Prepare
 				return Run (args).Result;
 			} catch (AggregateException aex) {
 				foreach (Exception ex in aex.InnerExceptions) {
-					PrintException (ex);
+					Helpers.PrintException (ex);
 				}
 			} catch (Exception ex) {
-				PrintException (ex);
+				Helpers.PrintException (ex);
 			} finally {
 				Log.Instance.Dispose ();
-				ResetConsoleColors ();
+				Helpers.ResetConsole ();
 			}
 
 			return 1;
-
-			void PrintException (Exception ex)
-			{
-				Log.Instance.ErrorLine (showSeverity: false);
-				Log.Instance.ErrorLine (ex.Message, showSeverity: false);
-				Log.Instance.ErrorLine (ex.ToString (), showSeverity: false);
-				Log.Instance.ErrorLine (showSeverity: false);
-			}
-		}
-
-		static void ResetConsoleColors ()
-		{
-			try {
-				Console.CursorVisible = true;
-				Console.ResetColor ();
-			} catch {
-				// Ignore
-			}
 		}
 
 		static async Task<int> Run (string[] args)

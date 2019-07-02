@@ -28,11 +28,22 @@
     <PropertyGroup>
       <BuildInfoInFile>BuildInfo.cs.in</BuildInfoInFile>
       <BuildInfoOutFile>$(IntermediateOutputPath)\BuildInfo.Generated.cs</BuildInfoOutFile>
+      <PropertyDefaultsInFile>Application/Properties.Defaults.cs.in</PropertyDefaultsInFile>
+      <PropertyDefaultsOutFile>$(IntermediateOutputPath)\Properties.Defaults.cs</PropertyDefaultsOutFile>
     </PropertyGroup>
 
     <ReplaceFileContents
         SourceFile="$(BuildInfoInFile)"
         DestinationFile="$(BuildInfoOutFile)"
         Replacements="@XA_SOURCE_ROOT@=$([System.IO.Path]::GetFullPath ('$(MSBuildThisFileDirectory)..\..\..'));@XA_PRODUCT_VERSION@=$(ProductVersion)" />
+
+    <ItemGroup>
+      <Replacement Include="@Configuration@=$(Configuration)" />
+    </ItemGroup>
+
+    <ReplaceFileContents
+        SourceFile="$(PropertyDefaultsInFile)"
+        DestinationFile="$(PropertyDefaultsOutFile)"
+        Replacements="@(Replacement)" />
   </Target>
 </Project>
