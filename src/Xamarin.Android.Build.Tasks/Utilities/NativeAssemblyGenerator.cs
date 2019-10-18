@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Xamarin.Android.Tasks
 {
-	abstract class NativeAssemblyGenerator
+	abstract class NativeAssemblyGenerator2
 	{
 		uint structureByteCount;
 		uint structureAlignBytes;
@@ -12,34 +12,39 @@ namespace Xamarin.Android.Tasks
 
 		protected string Indent { get; } = "\t";
 		protected NativeAssemblerTargetProvider TargetProvider { get; }
+		protected string TypemapsIncludeFile { get; }
+		public string MainSourceFile { get; }
 
-		protected NativeAssemblyGenerator (NativeAssemblerTargetProvider targetProvider)
+		protected NativeAssemblyGenerator2 (NativeAssemblerTargetProvider targetProvider, string baseFilePath)
 		{
 			if (targetProvider == null)
 				throw new ArgumentNullException (nameof (targetProvider));
+			if (String.IsNullOrEmpty (baseFilePath))
+				throw new ArgumentException ("must not be null or empty", nameof (baseFilePath));
+
 			TargetProvider = targetProvider;
+			TypemapsIncludeFile = $"{baseFilePath}.managed.inc";
+			MainSourceFile = $"{baseFilePath}.{targetProvider.AbiName}.s";
 		}
 
-		public void Write (StreamWriter output, string outputFileName)
+		public void Write (StreamWriter output)
 		{
 			if (output == null)
 				throw new ArgumentNullException (nameof (output));
 
-			WriteFileHeader (output, outputFileName);
+			WriteFileHeader (output);
 			WriteSymbols (output);
+			WriteFileFooter (output);
 			output.Flush ();
 		}
 
 		protected virtual void WriteSymbols (StreamWriter output)
-		{
-		}
+		{}
 
 		protected void WriteEndLine (StreamWriter output, string comment = null, bool indent = true)
 		{
 			if (!String.IsNullOrEmpty (comment)) {
-				if (indent)
-					output.Write (Indent);
-				WriteComment (output, comment);
+				WriteComment (output, comment, indent);
 			}
 			output.WriteLine ();
 		}
@@ -51,15 +56,18 @@ namespace Xamarin.Android.Tasks
 
 		protected void WriteCommentLine (StreamWriter output, string comment, bool indent = true)
 		{
-			WriteComment (output, comment);
+			WriteComment (output, comment, indent);
 			output.WriteLine ();
 		}
 
-		protected virtual void WriteFileHeader (StreamWriter output, string outputFileName)
+		protected virtual void WriteFileHeader (StreamWriter output)
 		{
 			TargetProvider.WriteFileHeader (output, Indent);
-			output.WriteLine ($"{Indent}.file{Indent}\"{Path.GetFileName (outputFileName)}\"");
+			output.WriteLine ($"{Indent}.file{Indent}\"{Path.GetFileName (MainSourceFile)}\"");
 		}
+
+		protected virtual void WriteFileFooter (StreamWriter output)
+		{}
 
 		protected virtual void WriteSection (StreamWriter output, string sectionName, bool hasStrings, bool writable)
 		{
@@ -104,6 +112,323 @@ namespace Xamarin.Android.Tasks
 		protected void WriteSymbol (StreamWriter output, string label, uint size, bool isGlobal, bool isObject, bool alwaysWriteSize)
 		{
 			WriteSymbol (output, null, null, label, size, alignBits: 0, isGlobal: isGlobal, isObject: isObject, alwaysWriteSize: alwaysWriteSize);
+		}
+
+		protected void WriteSymbol (StreamWriter output, string label, uint size, uint alignBits, bool isGlobal, bool isObject, bool alwaysWriteSize)
+		{
+			WriteSymbol (output, null, null, label, size, alignBits, isGlobal: isGlobal, isObject: isObject, alwaysWriteSize: alwaysWriteSize);
+		}
+
+		protected void WriteSymbol (StreamWriter output, string symbolName, uint alignBits, uint fieldAlignBytes, bool isGlobal, bool alwaysWriteSize, Func<uint> structureWriter)
+		{
+			WriteStructureSymbol (output, symbolName, alignBits, isGlobal);
+			uint size = WriteStructure (output, fieldAlignBytes, structureWriter);
+			WriteStructureSize (output, symbolName, size, alwaysWriteSize);
+		}
+
+		protected void WriteStructureSymbol (StreamWriter output, string symbolName, uint alignBits, bool isGlobal)
+		{
+			output.WriteLine ($"{Indent}.type{Indent}{symbolName}, {TargetProvider.TypePrefix}object");
+			if (alignBits > 0)
+				output.WriteLine ($"{Indent}.p2align{Indent}{alignBits}");
+			if (isGlobal)
+				output.WriteLine ($"{Indent}.global{Indent}{symbolName}");
+			if (!String.IsNullOrEmpty (symbolName))
+				output.WriteLine ($"{symbolName}:");
+		}
+
+		protected void WriteStructureSize (StreamWriter output, string symbolName, uint size, bool alwaysWriteSize = false)
+		{
+			if (size == 0 && !alwaysWriteSize)
+				return;
+
+			if (String.IsNullOrEmpty (symbolName))
+				throw new ArgumentException ("symbol name must be non-empty in order to write structure size", nameof (symbolName));
+
+			output.WriteLine ($"{Indent}.size{Indent}{symbolName}, {size}");
+		}
+
+		protected uint WriteStructure (StreamWriter output, uint fieldAlignBytes, Func<uint> structureWriter)
+		{
+			writingStructure = true;
+			structureByteCount = 0;
+			structureAlignBytes = fieldAlignBytes;
+			uint size = structureWriter != null ? structureWriter () : 0u;
+			writingStructure = false;
+
+			return size;
+		}
+
+		protected virtual string QuoteValue <T> (T value)
+		{
+			if (typeof(T) == typeof(string))
+				return $"\"{value}\"";
+
+			if (typeof(T) == typeof(bool))
+				return (bool)((object)value) ? "1" : "0";
+
+			return $"{value}";
+		}
+
+		protected uint WritePointer (StreamWriter output, string targetName = null, string label = null, bool isGlobal = false)
+		{
+			uint fieldSize = UpdateSize (output, targetName ?? String.Empty);
+			WriteSymbol (output, TargetProvider.PointerFieldType, targetName ?? "0", label, size: 0, alignBits: 0, isGlobal: isGlobal, isObject: false, alwaysWriteSize: false);
+			return fieldSize;
+		}
+
+		uint WriteDataPadding (StreamWriter output, uint nextFieldSize, uint sizeSoFar)
+		{
+			if (!writingStructure || structureAlignBytes <= 1 || nextFieldSize == 1)
+				return 0;
+
+			uint alignment = sizeSoFar % structureAlignBytes;
+			if (alignment == 0)
+				return 0;
+
+			uint nbytes = structureAlignBytes - alignment;
+			return WriteDataPadding (output, nbytes);
+		}
+
+		protected uint WriteDataPadding (StreamWriter output, uint nbytes)
+		{
+			if (nbytes == 0)
+				return 0;
+
+			output.WriteLine ($"{Indent}.zero{Indent}{nbytes}");
+			return nbytes;
+		}
+
+		protected uint WriteData (StreamWriter output, string value, string label, bool isGlobal = false)
+		{
+			if (String.IsNullOrEmpty (label))
+				throw new ArgumentException ("must not be null or empty", nameof (label));
+			if (value == null)
+				value = String.Empty;
+
+			WriteSection (output, $".rodata.{label}", hasStrings: true, writable: false);
+			WriteSymbol (output, value, isGlobal ? label : MakeLocalLabel (label), size: (ulong)(value.Length + 1), alignBits: 0, isGlobal: isGlobal, isObject: true, alwaysWriteSize: true);
+			return TargetProvider.GetTypeSize (value);
+		}
+
+		protected uint WriteAsciiData (StreamWriter output, string value, uint padToWidth = 0)
+		{
+			if (value == null)
+				value = String.Empty;
+
+			uint size = (uint)value.Length;
+			if (size > 0) {
+				output.WriteLine ($"{Indent}.ascii{Indent}\"{value}\"");
+			} else if (padToWidth == 0) {
+				return WriteDataPadding (output, 1);
+			}
+
+			if (padToWidth > size)
+				size += WriteDataPadding (output, padToWidth - size);
+
+			return size;
+		}
+
+		protected string MakeLocalLabel (string label)
+		{
+			return $".L.{label}";
+		}
+
+		uint UpdateSize <T> (StreamWriter output, T[] value)
+		{
+			uint typeSize = TargetProvider.GetTypeSize <T> ();
+			uint fieldSize = typeSize * (uint)value.Length;
+
+			fieldSize += WriteDataPadding (output, fieldSize, structureByteCount);
+			structureByteCount += fieldSize;
+
+			return fieldSize;
+		}
+
+		uint UpdateSize <T> (StreamWriter output, T value)
+		{
+			uint fieldSize;
+
+			Type t = typeof(T);
+			if (t == typeof (string))
+				fieldSize = TargetProvider.GetPointerSize ();
+			else
+				fieldSize = TargetProvider.GetTypeSize (value);
+
+			fieldSize += WriteDataPadding (output, fieldSize, structureByteCount);
+			structureByteCount += fieldSize;
+
+			return fieldSize;
+		}
+
+		protected uint WriteData (StreamWriter output, byte[] value, string label = null, bool isGlobal = false)
+		{
+			uint fieldSize = UpdateSize (output, value);
+			var symbolValue = new StringBuilder ();
+			bool first = true;
+			foreach (byte b in value) {
+				if (!first)
+					symbolValue.Append (", ");
+				else
+					first = false;
+
+				symbolValue.Append ($"0x{b:x02}");
+			}
+			WriteSymbol (output, TargetProvider.MapType<byte> (), symbolValue.ToString (), symbolName: label, size: 0, alignBits: 0, isGlobal: isGlobal, isObject: false, alwaysWriteSize: false);
+
+			return fieldSize;
+		}
+
+		protected uint WriteData (StreamWriter output, byte value, string label = null, bool isGlobal = false)
+		{
+			uint fieldSize = UpdateSize (output, value);
+			WriteSymbol (output, value, label, size: 0, alignBits: 0, isGlobal: isGlobal, isObject: false, alwaysWriteSize: false);
+			return fieldSize;
+		}
+
+		protected uint WriteData (StreamWriter output, Int32 value, string label = null, bool isGlobal = false)
+		{
+			uint fieldSize = UpdateSize (output, value);
+			WriteSymbol (output, value, label, size: 0, alignBits: 0, isGlobal: isGlobal, isObject: false, alwaysWriteSize: false);
+			return fieldSize;
+		}
+
+		protected uint WriteData (StreamWriter output, UInt32 value, string label = null, bool isGlobal = false)
+		{
+			uint fieldSize = UpdateSize (output, value);
+			WriteSymbol (output, value, label, size: 0, alignBits: 0, isGlobal: isGlobal, isObject: false, alwaysWriteSize: false);
+			return fieldSize;
+		}
+
+		protected uint WriteData (StreamWriter output, Int64 value, string label = null, bool isGlobal = false)
+		{
+			uint fieldSize = UpdateSize (output, value);
+			WriteSymbol (output, value, label, size: 0, alignBits: 0, isGlobal: isGlobal, isObject: false, alwaysWriteSize: false);
+			return fieldSize;
+		}
+
+		protected uint WriteData (StreamWriter output, UInt64 value, string label = null, bool isGlobal = false)
+		{
+			uint fieldSize = UpdateSize (output, value);
+			WriteSymbol (output, value, label, size: 0, alignBits: 0, isGlobal: isGlobal, isObject: false, alwaysWriteSize: false);
+			return fieldSize;
+		}
+
+		protected uint WriteData (StreamWriter output, bool value, string label = null, bool isGlobal = false)
+		{
+			uint fieldSize = UpdateSize (output, value);
+			WriteSymbol (output, value, label, size: 0, alignBits: 0, isGlobal: isGlobal, isObject: false, alwaysWriteSize: false);
+			return fieldSize;
+		}
+	}
+
+	abstract class NativeAssemblyGenerator
+	{
+		uint structureByteCount;
+		uint structureAlignBytes;
+		bool writingStructure = false;
+
+		protected string Indent { get; } = "\t";
+		protected NativeAssemblerTargetProvider TargetProvider { get; }
+
+		protected NativeAssemblyGenerator (NativeAssemblerTargetProvider targetProvider)
+		{
+			if (targetProvider == null)
+				throw new ArgumentNullException (nameof (targetProvider));
+			TargetProvider = targetProvider;
+		}
+
+		public void Write (StreamWriter output, string outputFileName)
+		{
+			if (output == null)
+				throw new ArgumentNullException (nameof (output));
+
+			WriteFileHeader (output, outputFileName);
+			WriteSymbols (output);
+			WriteFileFooter (output, outputFileName);
+			output.Flush ();
+		}
+
+		protected virtual void WriteSymbols (StreamWriter output)
+		{
+		}
+
+		protected void WriteEndLine (StreamWriter output, string comment = null, bool indent = true)
+		{
+			if (!String.IsNullOrEmpty (comment)) {
+				WriteComment (output, comment, indent);
+			}
+			output.WriteLine ();
+		}
+
+		protected void WriteComment (StreamWriter output, string comment, bool indent = true)
+		{
+			output.Write ($"{(indent ? Indent : String.Empty)}/* {comment} */");
+		}
+
+		protected void WriteCommentLine (StreamWriter output, string comment, bool indent = true)
+		{
+			WriteComment (output, comment, indent);
+			output.WriteLine ();
+		}
+
+		protected virtual void WriteFileHeader (StreamWriter output, string outputFileName)
+		{
+			TargetProvider.WriteFileHeader (output, Indent);
+			output.WriteLine ($"{Indent}.file{Indent}\"{Path.GetFileName (outputFileName)}\"");
+		}
+
+		protected virtual void WriteFileFooter (StreamWriter output, string outputFileName)
+		{}
+
+		protected virtual void WriteSection (StreamWriter output, string sectionName, bool hasStrings, bool writable)
+		{
+			output.Write ($"{Indent}.section{Indent}{sectionName},\"a"); // a - section is allocatable
+			if (hasStrings)
+				output.Write ("MS"); // M - section is mergeable, S - section contains zero-terminated strings
+			else if (writable)
+				output.Write ("w");
+
+			output.Write ($"\",{TargetProvider.TypePrefix}progbits");
+			if (hasStrings)
+				output.Write (",1");
+			output.WriteLine ();
+		}
+
+		// `alignBits` indicates the number of lowest bits that have to be cleared to 0 in order to align the
+		// following data structure, thus `2` would mean "align to 4 bytes", `3' would be "align to 8 bytes"
+		// etc. In general, if the data field contains a pointer the alignment should be to the platform's
+		// native pointer size, if not it should be 2 (for 4-byte alignment) in the case of the targets we
+		// support. Alignment is not necessary for standalone fields (i.e. not parts of a structure)
+		protected void WriteSymbol <T> (StreamWriter output, T symbolValue, string symbolName, ulong size, uint alignBits, bool isGlobal, bool isObject, bool alwaysWriteSize)
+		{
+			WriteSymbol (output, TargetProvider.MapType<T>(), QuoteValue (symbolValue), symbolName, size, alignBits, isGlobal, isObject, alwaysWriteSize);
+		}
+
+		protected void WriteSymbol (StreamWriter output, string symbolType, string symbolValue, string symbolName, ulong size, uint alignBits, bool isGlobal, bool isObject, bool alwaysWriteSize)
+		{
+			if (isObject)
+				output.WriteLine ($"{Indent}.type{Indent}{symbolName}, {TargetProvider.TypePrefix}object");
+			if (alignBits > 0)
+				output.WriteLine ($"{Indent}.p2align{Indent}{alignBits}");
+			if (isGlobal)
+				output.WriteLine ($"{Indent}.global{Indent}{symbolName}");
+			if (!String.IsNullOrEmpty (symbolName))
+				output.WriteLine ($"{symbolName}:");
+			if (!String.IsNullOrEmpty (symbolType) && !String.IsNullOrEmpty (symbolValue))
+				output.WriteLine ($"{Indent}{symbolType}{Indent}{symbolValue}");
+			if (alwaysWriteSize || size > 0)
+				output.WriteLine ($"{Indent}.size{Indent}{symbolName}, {size}");
+		}
+
+		protected void WriteSymbol (StreamWriter output, string label, uint size, bool isGlobal, bool isObject, bool alwaysWriteSize)
+		{
+			WriteSymbol (output, null, null, label, size, alignBits: 0, isGlobal: isGlobal, isObject: isObject, alwaysWriteSize: alwaysWriteSize);
+		}
+
+		protected void WriteSymbol (StreamWriter output, string label, uint size, uint alignBits, bool isGlobal, bool isObject, bool alwaysWriteSize)
+		{
+			WriteSymbol (output, null, null, label, size, alignBits, isGlobal: isGlobal, isObject: isObject, alwaysWriteSize: alwaysWriteSize);
 		}
 
 		protected void WriteSymbol (StreamWriter output, string symbolName, uint alignBits, uint fieldAlignBytes, bool isGlobal, bool alwaysWriteSize, Func<uint> structureWriter)

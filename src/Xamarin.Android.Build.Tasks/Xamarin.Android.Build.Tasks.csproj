@@ -39,11 +39,14 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Collections.Immutable">
-      <HintPath>..\..\packages\System.Collections.Immutable.1.5.0\lib\netstandard2.0\System.Collections.Immutable.dll</HintPath>
+      <HintPath>..\..\packages\System.Collections.Immutable.1.6.0\lib\netstandard2.0\System.Collections.Immutable.dll</HintPath>
     </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Reflection.Metadata">
-      <HintPath>..\..\packages\System.Reflection.Metadata.1.6.0\lib\netstandard2.0\System.Reflection.Metadata.dll</HintPath>
+      <HintPath>..\..\packages\System.Reflection.Metadata.1.7.0\lib\netstandard2.0\System.Reflection.Metadata.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reflection.MetadataLoadContext">
+      <HintPath>..\..\packages\System.Reflection.MetadataLoadContext.4.6.0\lib\netstandard2.0\System.Reflection.MetadataLoadContext.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
@@ -127,6 +130,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(IntermediateOutputPath)Profile.g.cs" />
+    <Compile Include="$(IntermediateOutputPath)TypeMapGenerator.BCLAssemblyNames.g.cs" />
     <Compile Include="Linker\LinkModes.cs" />
     <Compile Include="Generator\Generator.cs" />
     <Compile Include="Linker\MonoDroid.Tuner\FixAbstractMethodsStep.cs" />
@@ -165,6 +169,7 @@
     <Compile Include="Tasks\GetMonoPlatformJar.cs" />
     <Compile Include="Tasks\GeneratePackageManagerJava.cs" />
     <Compile Include="Tasks\GenerateJavaStubs.cs" />
+    <Compile Include="Tasks\GenerateTypeMaps.cs" />
     <Compile Include="Tasks\Javac.cs" />
     <Compile Include="Tasks\LinkAssemblies.cs" />
     <Compile Include="Tasks\CopyResource.cs" />
@@ -207,6 +212,9 @@
     <Compile Include="Utilities\ManagedResourceParser.cs" />
     <Compile Include="Utilities\ManifestDocumentElement.cs" />
     <Compile Include="Utilities\ManifestDocument.cs" />
+    <Compile Include="Utilities\TypeMapGenerator.cs" />
+    <Compile Include="Utilities\TMGJavaType.cs" />
+    <Compile Include="Utilities\TMGJavaTypeScanner.cs" />
     <Compile Include="Mono.Android\MetaDataAttribute.Partial.cs" />
     <Compile Include="Utilities\MonoAndroidHelper.cs" />
     <None Include="Linker\MonoDroid.Tuner\PreserveCode.cs" />
@@ -570,6 +578,7 @@
     <Compile Include="Utilities\NativeAssemblyDataStream.cs" />
     <Compile Include="Utilities\NativeAssemblyGenerator.cs" />
     <Compile Include="Utilities\NativeAssemblerTargetProvider.cs" />
+    <Compile Include="Utilities\NativeTypeMappingData.cs" />
     <Compile Include="Utilities\ARMNativeAssemblerTargetProvider.cs" />
     <Compile Include="Utilities\X86NativeAssemblerTargetProvider.cs" />
     <Compile Include="Utilities\TypeMappingNativeAssemblyGenerator.cs" />

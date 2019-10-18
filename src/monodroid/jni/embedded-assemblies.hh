@@ -3,7 +3,10 @@
 #define INC_MONODROID_EMBEDDED_ASSEMBLIES_H
 
 #include <cstring>
+#include <mono/metadata/object.h>
 #include <mono/metadata/assembly.h>
+
+#include "xamarin-app.hh"
 
 struct TypeMapHeader;
 
@@ -39,8 +42,8 @@ namespace xamarin::android::internal {
 		void try_load_typemaps_from_directory (const char *path);
 #endif
 		void install_preload_hooks ();
-		const char* typemap_java_to_managed (const char *java);
-		const char* typemap_managed_to_java (const char *managed);
+		MonoReflectionType* typemap_java_to_managed (MonoString *java_type);
+		const char* typemap_managed_to_java (const uint8_t *mvid, const int32_t token);
 
 		/* returns current number of *all* assemblies found from all invocations */
 		template<bool (*should_register_fn)(const char*)>
@@ -94,6 +97,16 @@ namespace xamarin::android::internal {
 		{
 			return assemblies_prefix_override != nullptr ? assemblies_prefix_override : assemblies_prefix;
 		}
+
+		template<typename Key, typename Entry, int (*compare)(const Key*, const Entry*)>
+		const Entry* binary_search (const Key *key, const Entry *base, size_t nmemb);
+
+		template<typename Key, typename Entry, int (*compare)(const Key*, const Entry*)>
+		const Entry* binary_search (const Key *key, const Entry *base, size_t nmemb, size_t extra_size);
+
+		static int compare_mvid (const uint8_t *mvid, const TypeMapModule *module);
+		static int compare_type_token (const int32_t *token, const TypeMapModuleEntry *entry);
+		static int compare_java_name (const char *java_name, const TypeMapJava *entry);
 
 	private:
 		bool                   register_debug_symbols;

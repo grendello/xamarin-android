@@ -53,6 +53,7 @@
     <Compile Include="Xamarin.Android.Tools.BootstrapTasks\Emulator.cs" />
     <Compile Include="Xamarin.Android.Tools.BootstrapTasks\GenerateMonoDroidIncludes.cs" />
     <Compile Include="Xamarin.Android.Tools.BootstrapTasks\GenerateProfile.cs" />
+    <Compile Include="Xamarin.Android.Tools.BootstrapTasks\GenerateTypeMapGeneratorBCLAssemblyNames.cs" />
     <Compile Include="Xamarin.Android.Tools.BootstrapTasks\GetNugetPackageBasePath.cs" />
     <Compile Include="Xamarin.Android.Tools.BootstrapTasks\OS.cs" />
     <Compile Include="Xamarin.Android.Tools.BootstrapTasks\ProcessMSBuildTiming.cs" />

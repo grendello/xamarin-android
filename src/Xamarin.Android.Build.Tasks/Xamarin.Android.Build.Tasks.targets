@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <UsingTask TaskName="Xamarin.Android.Tools.BootstrapTasks.GenerateProfile" AssemblyFile="..\..\bin\Build$(Configuration)\Xamarin.Android.Tools.BootstrapTasks.dll" />
+  <UsingTask TaskName="Xamarin.Android.Tools.BootstrapTasks.GenerateTypeMapGeneratorBCLAssemblyNames" AssemblyFile="..\..\bin\Build$(Configuration)\Xamarin.Android.Tools.BootstrapTasks.dll" />
   <UsingTask TaskName="Xamarin.Android.Tools.BootstrapTasks.UnzipDirectoryChildren" AssemblyFile="..\..\bin\Build$(Configuration)\Xamarin.Android.Tools.BootstrapTasks.dll" />
   <UsingTask AssemblyFile="..\..\bin\Build$(Configuration)\xa-prep-tasks.dll"       TaskName="Xamarin.Android.BuildTools.PrepTasks.ReplaceFileContents" />
   <UsingTask AssemblyFile="..\..\bin\Build$(Configuration)\xa-prep-tasks.dll"       TaskName="Xamarin.Android.BuildTools.PrepTasks.Which" />
@@ -10,6 +11,7 @@
   <PropertyGroup>
     <_SharedRuntimeBuildPath Condition=" '$(_SharedRuntimeBuildPath)' == '' ">$(XAInstallPrefix)xbuild-frameworks\MonoAndroid\</_SharedRuntimeBuildPath>
     <_GeneratedProfileClass>$(MSBuildThisFileDirectory)$(IntermediateOutputPath)Profile.g.cs</_GeneratedProfileClass>
+    <_GeneratedTypeMapGeneratorBCLAssemblyNamesClass>$(MSBuildThisFileDirectory)$(IntermediateOutputPath)TypeMapGenerator.BCLAssemblyNames.g.cs</_GeneratedTypeMapGeneratorBCLAssemblyNamesClass>
     <BuildDependsOn>
       _CopyNDKTools;
       _GenerateXACommonProps;
@@ -138,6 +140,10 @@
     <_SharedRuntimeAssemblies Include="$(_SharedRuntimeBuildPath)$(AndroidFrameworkVersion)\OpenTK.dll" />
     <_SharedRuntimeAssemblies Include="$(_SharedRuntimeBuildPath)$(AndroidFrameworkVersion)\OpenTK-1.0.dll" />
   </ItemGroup>
+  <ItemGroup>
+    <_TypeMapGeneraterBCLAssemblyName Include="@(MonoProfileAssembly->'%(Identity)')" />
+    <_TypeMapGeneraterBCLAssemblyName Include="@(MonoFacadeAssembly->'%(Identity)')" />
+  </ItemGroup>
   <Target Name="_PrepareNDKToolsItems">
     <PropertyGroup>
       <_PrebuiltToolchainDir Condition=" '$(HostOS)' == 'Linux' ">linux-x86_64</_PrebuiltToolchainDir>
@@ -240,6 +246,20 @@
         Overwrite="false"/>
     <ItemGroup>
       <FileWrites Include="$(_GeneratedProfileClass)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GenerateTypeMapGeneratorBCLAssemblyNamesClass"
+      BeforeTargets="CoreCompile"
+      Inputs="@(_TypeMapGeneraterBCLAssemblyName)"
+      Outputs="$(_GeneratedTypeMapGeneratorBCLAssemblyNamesClass)">
+    <GenerateTypeMapGeneratorBCLAssemblyNames Files="@(_TypeMapGeneraterBCLAssemblyName)" OutputFile="$(_GeneratedTypeMapGeneratorBCLAssemblyNamesClass)" />
+    <WriteLinesToFile
+        File="$(IntermediateOutputPath)$(CleanFile)"
+        Lines="$(_GeneratedTypeMapGeneratorBCLAssemblyNamesClass)"
+        Overwrite="false"/>
+    <ItemGroup>
+      <FileWrites Include="$(_GeneratedTypeMapGeneratorBCLAssemblyNamesClass)" />
     </ItemGroup>
   </Target>
   

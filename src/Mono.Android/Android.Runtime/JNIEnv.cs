@@ -629,13 +629,13 @@ namespace Android.Runtime {
 		}
 
 		[DllImport ("__Internal", CallingConvention = CallingConvention.Cdecl)]
-		internal static extern IntPtr monodroid_typemap_managed_to_java (string managed);
+		internal static extern IntPtr monodroid_typemap_managed_to_java (byte[] mvid, int token);
 
 		public static string GetJniName (Type type)
 		{
 			if (type == null)
 				throw new ArgumentNullException ("type");
-			var java  = monodroid_typemap_managed_to_java (type.FullName + ", " + type.Assembly.GetName ().Name);
+			var java  = monodroid_typemap_managed_to_java (type.Module.ModuleVersionId.ToByteArray (), type.MetadataToken);
 			return java == IntPtr.Zero
 				? JavaNativeTypeManager.ToJniName (type)
 				: Marshal.PtrToStringAnsi (java);

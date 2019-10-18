@@ -7,6 +7,7 @@ using Java.Interop.Tools.JavaCallableWrappers;
 
 namespace Xamarin.Android.Tasks
 {
+	// TODO: remove once done with new typemaps
 	class NativeAssemblyDataStream : Stream
 	{
 		const uint MapVersionFound     = 0x0001;

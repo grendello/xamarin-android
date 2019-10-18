@@ -9,7 +9,7 @@
 
 #include "util.hh"
 #include "cppcompat.hh"
-#include "xamarin-app.h"
+#include "xamarin-app.hh"
 #include "shared-constants.hh"
 #include "basic-android-system.hh"
 

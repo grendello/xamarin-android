@@ -25,7 +25,7 @@
 #include "monodroid.h"
 #include "monodroid-glue-internal.hh"
 #include "jni-wrappers.hh"
-#include "xamarin-app.h"
+#include "xamarin-app.hh"
 #include "cpp-util.hh"
 
 #if defined (DEBUG) || !defined (ANDROID)

@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2011 Xamarin, Inc. All rights reserved.
+// Copyright (C) 2011 Xamarin, Inc. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -147,7 +147,7 @@ namespace Xamarin.Android.Tasks
 			};
 			var all_java_types = scanner.GetJavaTypes (assemblies, res);
 
-			WriteTypeMappings (all_java_types);
+//			WriteTypeMappings (all_java_types);
 
 			var java_types = all_java_types
 				.Where (t => !JavaTypeScanner.ShouldSkipJavaCallableWrapperGeneration (t))

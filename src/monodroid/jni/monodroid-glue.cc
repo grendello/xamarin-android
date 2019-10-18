@@ -68,7 +68,7 @@
 #include "mkbundle-api.h"
 #include "monodroid-glue-internal.hh"
 #include "globals.hh"
-#include "xamarin-app.h"
+#include "xamarin-app.hh"
 #include "timing.hh"
 
 #ifndef WINDOWS
@@ -902,6 +902,8 @@ MonodroidRuntime::lookup_bridge_info (MonoDomain *domain, MonoImage *image, cons
 void
 MonodroidRuntime::init_android_runtime (MonoDomain *domain, JNIEnv *env, jclass runtimeClass, jobject loader)
 {
+	mono_add_internal_call ("Java.Interop.TypeManager::monodroid_typemap_java_to_managed", reinterpret_cast<const void*>(typemap_java_to_managed));
+
 	struct JnienvInitializeArgs init = {};
 	init.javaVm                 = osBridge.get_jvm ();
 	init.env                    = env;
@@ -1373,6 +1375,12 @@ MonodroidRuntime::create_and_initialize_domain (JNIEnv* env, jclass runtimeClass
 	osBridge.add_monodroid_domain (domain);
 
 	return domain;
+}
+
+MonoReflectionType*
+MonodroidRuntime::typemap_java_to_managed (MonoString *java_type_name)
+{
+	return embeddedAssemblies.typemap_java_to_managed (java_type_name);
 }
 
 inline void
