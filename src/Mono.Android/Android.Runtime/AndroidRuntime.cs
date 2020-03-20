@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -84,16 +85,32 @@ namespace Android.Runtime {
 				IntPtr classLoader_loadClass,
 				bool jniAddNativeMethodRegistrationAttributePresent)
 		{
+//			IntPtr totalTime = JNIEnv.monodroid_timing_start ("AndroidRuntimeOptions.ctor entered");
 			EnvironmentPointer      = jnienv;
+
+//			IntPtr partialTime = JNIEnv.monodroid_timing_start (String.Empty);
 			ClassLoader             = new JniObjectReference (classLoader, JniObjectReferenceType.Global);
+//			JNIEnv.monodroid_timing_stop (partialTime, "JniObjectReference instantiation");
+
 			ClassLoader_LoadClass_id= classLoader_loadClass;
 			InvocationPointer       = vm;
 			NewObjectRequired       = !allocNewObjectSupported;
+
+//			partialTime = JNIEnv.monodroid_timing_start (String.Empty);
 			ObjectReferenceManager  = new AndroidObjectReferenceManager ();
+//			JNIEnv.monodroid_timing_stop (partialTime, "AndroidObjectReferenceManager instantiation");
+
+//			partialTime = JNIEnv.monodroid_timing_start (String.Empty);
 			TypeManager             = new AndroidTypeManager (jniAddNativeMethodRegistrationAttributePresent);
+//			JNIEnv.monodroid_timing_stop (partialTime, "AndroidTypeManager instantiation");
+
+//			partialTime = JNIEnv.monodroid_timing_start (String.Empty);
 			ValueManager            = new AndroidValueManager ();
+//			JNIEnv.monodroid_timing_stop (partialTime, "AndroidValueManager instantiation");
+
 			UseMarshalMemberBuilder = false;
 			JniAddNativeMethodRegistrationAttributePresent = jniAddNativeMethodRegistrationAttributePresent;
+//			JNIEnv.monodroid_timing_stop (totalTime, "AndroidRuntimeOptions.ctor total time");
 		}
 	}
 
@@ -293,7 +310,7 @@ namespace Android.Runtime {
 			return (Delegate)dynamic_callback_gen.Invoke (null, new object [] { method });
 		}
 
-		static List<JniNativeMethodRegistration> sharedRegistrations = new List<JniNativeMethodRegistration> ();
+		static List<JniNativeMethodRegistration> sharedRegistrations;
 
 		static bool FastRegisterNativeMembers (JniType nativeClass, Type type, string methods)
 		{
@@ -307,7 +324,10 @@ namespace Android.Runtime {
 				Monitor.TryEnter (sharedRegistrations, ref lockTaken);
 				List<JniNativeMethodRegistration> registrations;
 				if (lockTaken) {
-					sharedRegistrations.Clear ();
+					if (sharedRegistrations == null)
+						sharedRegistrations = new List<JniNativeMethodRegistration> ();
+					else
+						sharedRegistrations.Clear ();
 					registrations = sharedRegistrations;
 				} else {
 					registrations = new List<JniNativeMethodRegistration> ();
@@ -362,11 +382,143 @@ namespace Android.Runtime {
 			}
 		}
 
+		ref struct NativeMethodDescription
+		{
+			public ReadOnlySpan<char> NativeMethodName;
+			public ReadOnlySpan<char> JavaSignature;
+			public ReadOnlySpan<char> ManagedMethodName;
+			public ReadOnlySpan<char> ManagedTypeName;
+		}
+
 		public override void RegisterNativeMembers (JniType nativeClass, Type type, string methods)
 		{
 			if (FastRegisterNativeMembers (nativeClass, type, methods))
 				return;
 
+			ReadOnlySpan<char> members = methods.AsSpan ();
+			if (members.IsEmpty) {
+				if (jniAddNativeMethodRegistrationAttributePresent)
+					base.RegisterNativeMembers (nativeClass, type, methods);
+				return;
+			}
+
+			var natives = new List<JniNativeMethodRegistration> ();
+			var desc = new NativeMethodDescription ();
+			int methodStart = 0;
+			for (int i = 0; i < members.Length; i++) {
+				if (members[i] != '\n')
+					continue;
+
+				ReadOnlySpan<char> method = members.Slice (methodStart, i - methodStart);
+				methodStart = i + 1;
+
+				if (method.IsEmpty)
+					continue;
+
+				int partStart = 0, partNum = 0, lastCharPos = method.Length - 1;
+				for (int j = 0; j < method.Length; j++) {
+					bool beforeLastPos = j < lastCharPos;
+					if (method[j] != ':' && beforeLastPos)
+						continue;
+
+					switch (partNum) {
+						case 0:
+							desc.NativeMethodName = method.Slice (partStart, j - partStart);
+							break;
+
+						case 1:
+							desc.JavaSignature = method.Slice (partStart, j - partStart);
+							break;
+
+						case 2:
+							desc.ManagedMethodName = method.Slice (partStart, (beforeLastPos ? j : j + 1) - partStart);
+							break;
+
+						case 3:
+							desc.ManagedTypeName = method.Slice (partStart);
+							break;
+					}
+
+					if (partNum == 3)
+						break;
+					partNum++;
+					partStart = j + 1;
+				}
+
+				Delegate callback;
+				if (IsExport (ref desc.ManagedMethodName)) {
+					string mname = desc.NativeMethodName.Slice (2).ToString ();
+					string javaSig = desc.JavaSignature.ToString ();
+					MethodInfo minfo = type.GetMethods (BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static).Where (m => m.Name == mname && JavaNativeTypeManager.GetJniSignature (m) == javaSig).FirstOrDefault ();
+					if (minfo == null)
+						throw new InvalidOperationException ($"Specified managed method '{mname}' was not found. Signature: {javaSig}");
+					callback = CreateDynamicCallback (minfo);
+				} else {
+					Type callbackDeclaringType;
+					if (!desc.ManagedTypeName.IsEmpty) {
+						callbackDeclaringType = Type.GetType (desc.ManagedTypeName.ToString (), throwOnError: true);
+					} else {
+						callbackDeclaringType = type;
+					}
+
+					while (callbackDeclaringType.ContainsGenericParameters) {
+						callbackDeclaringType = callbackDeclaringType.BaseType;
+					}
+
+					GetCallbackHandler connector = (GetCallbackHandler) Delegate.CreateDelegate (typeof (GetCallbackHandler), callbackDeclaringType, desc.ManagedMethodName.ToString ());
+					callback = connector ();
+				}
+				natives.Add (new JniNativeMethodRegistration (desc.NativeMethodName.ToString (), desc.JavaSignature.ToString (), callback));
+				desc.ManagedTypeName = ReadOnlySpan<char>.Empty;
+			}
+
+			JniEnvironment.Types.RegisterNatives (nativeClass.PeerReference, natives.ToArray (), natives.Count);
+
+			bool IsExport (ref ReadOnlySpan<char> name)
+			{
+				if (name.Length != 10)
+					return false;
+
+				if (name[0] != '_')
+					return false;
+
+				if (name[1] != '_')
+					return false;
+
+				if (name[2] != 'e')
+					return false;
+
+				if (name[3] != 'x')
+					return false;
+
+				if (name[4] != 'p')
+					return false;
+
+				if (name[5] != 'o')
+					return false;
+
+				if (name[6] != 'r')
+					return false;
+
+				if (name[7] != 't')
+					return false;
+
+				if (name[8] != '_')
+					return false;
+
+				if (name[9] != '_')
+					return false;
+
+				return true;
+			}
+		}
+
+		public /*override*/ void RegisterNativeMembersOld(JniType nativeClass, Type type, string methods)
+		{
+			if (FastRegisterNativeMembers (nativeClass, type, methods))
+				return;
+
+			Logger.Log (LogLevel.Info, "RNM", $"methods == '{methods}'");
 			if (string.IsNullOrEmpty (methods)) {
 				if (jniAddNativeMethodRegistrationAttributePresent)
 					base.RegisterNativeMembers (nativeClass, type, methods);
@@ -401,6 +553,8 @@ namespace Android.Runtime {
 					while (callbackDeclaringType.ContainsGenericParameters) {
 						callbackDeclaringType = callbackDeclaringType.BaseType;
 					}
+					Logger.Log (LogLevel.Info, "RNM", $"callbackDeclaringType == '{callbackDeclaringType}'");
+					Logger.Log (LogLevel.Info, "RNM", $"managed method name == '{toks[2]}'");
 					GetCallbackHandler connector = (GetCallbackHandler) Delegate.CreateDelegate (typeof (GetCallbackHandler),
 						callbackDeclaringType, toks [2]);
 					callback = connector ();
@@ -466,8 +620,8 @@ namespace Android.Runtime {
 						found = true;
 						if (Logger.LogGlobalRef) {
 							Logger.Log (LogLevel.Info, "monodroid-gref",
-									string.Format ("warning: not replacing previous registered handle {0} with handle {1} for key_handle 0x{2}",
-										target.PeerReference.ToString (), reference.ToString (), hash.ToString ("x")));
+                                                                       string.Format ("warning: not replacing previous registered handle {0} with handle {1} for key_handle 0x{2}",
+                                                                               target.PeerReference.ToString (), reference.ToString (), hash.ToString ("x")));
 						}
 					}
 				}

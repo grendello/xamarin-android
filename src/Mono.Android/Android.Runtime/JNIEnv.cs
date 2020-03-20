@@ -68,7 +68,7 @@ namespace Android.Runtime {
 		internal    static      AndroidValueManager AndroidValueManager;
 
 		[DllImport ("__Internal", CallingConvention = CallingConvention.Cdecl)]
-		extern static void monodroid_log (LogLevel level, LogCategories category, string message);
+		internal extern static void monodroid_log (LogLevel level, LogCategories category, string message);
 
 		[DllImport ("__Internal", CallingConvention = CallingConvention.Cdecl)]
 		internal extern static IntPtr monodroid_timing_start (string message);
