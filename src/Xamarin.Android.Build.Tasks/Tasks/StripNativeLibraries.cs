@@ -58,9 +58,9 @@ namespace Xamarin.Android.Tasks
 			return !Log.HasLoggedErrors;
 		}
 
-		protected override string ToolName => OS.IsWindows ? $"{triple}-strip.exe" : $"{triple}-strip";
+		protected override string ToolName => $"{triple}-strip";
 
-		protected override string GenerateFullPathToTool () => Path.Combine (ToolPath, ToolName);
+		protected override string GenerateFullPathToTool () => MonoAndroidHelper.GetExecutablePath (ToolPath, ToolName);
 
 		protected override string GenerateCommandLineCommands ()
 		{
