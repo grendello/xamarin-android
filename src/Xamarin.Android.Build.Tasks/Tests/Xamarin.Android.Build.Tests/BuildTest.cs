@@ -145,7 +145,7 @@ namespace Xamarin.Android.Build.Tests
 
 		[Test]
 		[Category ("SmokeTests")]
-		public void SmokeTestBuildWithSpecialCharacters ([Values (false, true)] bool forms)
+		public void SmokeTestBuildWithSpecialCharacters ([Values (false, true)] bool forms, [Values (false, true)] aot)
 		{
 			var testName = "テスト";
 
@@ -155,7 +155,7 @@ namespace Xamarin.Android.Build.Tests
 				new XamarinAndroidApplicationProject ();
 			proj.ProjectName = testName;
 			proj.IsRelease = true;
-			proj.AotAssemblies = true;
+			proj.AotAssemblies = aot;
 
 			if (forms) {
 				proj.PackageReferences.Clear ();
