@@ -145,7 +145,7 @@ namespace Xamarin.Android.Build.Tests
 
 		[Test]
 		[Category ("SmokeTests")]
-		public void SmokeTestBuildWithSpecialCharacters ([Values (false, true)] bool forms, [Values (false, true)] aot)
+		public void SmokeTestBuildWithSpecialCharacters ([Values (false, true)] bool forms, [Values (false, true)] bool aot)
 		{
 			var testName = "テスト";
 
