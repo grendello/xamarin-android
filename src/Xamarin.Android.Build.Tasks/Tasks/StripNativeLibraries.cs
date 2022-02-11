@@ -58,9 +58,9 @@ namespace Xamarin.Android.Tasks
 			return !Log.HasLoggedErrors;
 		}
 
-		protected override string ToolName => $"{triple}-strip";
+		protected override string ToolName => GetToolName ($"{triple}-strip");
 
-		protected override string GenerateFullPathToTool () => MonoAndroidHelper.GetExecutablePath (ToolPath, ToolName);
+		protected override string GenerateFullPathToTool () => Path.Combine (ToolPath, ToolName);
 
 		protected override string GenerateCommandLineCommands ()
 		{
@@ -79,6 +79,17 @@ namespace Xamarin.Android.Tasks
 				"x86_64" => "x86_64-linux-android",
 				_ => throw new InvalidOperationException ($"Unknown ABI: {abi}"),
 			};
+		}
+
+		// We need this because `GenerateFullPathToTool()` is ignored when `ToolPath` is set (https://docs.microsoft.com/en-us/dotnet/api/microsoft.build.utilities.tooltask.generatefullpathtotool?view=msbuild-17-netcore)
+		// Some tools we use with llvm-based toolchain have .cmd wrappers instead of .exe, so we need to determine the actual name from filesystem.
+		string GetToolName (string toolName)
+		{
+			if (OS.IsWindows) {
+				return Path.GetFileName (MonoAndroidHelper.GetExecutablePath (ToolPath, toolName));
+			}
+
+			return toolName;
 		}
 	}
 }
