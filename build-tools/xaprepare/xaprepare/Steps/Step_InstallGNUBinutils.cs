@@ -71,9 +71,7 @@ namespace Xamarin.Android.Prepare
 			void CopyTools (string prefix)
 			{
 				bool copyPrefixed = !String.IsNullOrEmpty (prefix);
-				Console.WriteLine ($"Copy prefixed? {copyPrefixed}");
 				foreach (NDKTool tool in Configurables.Defaults.NDKTools) {
-					Console.WriteLine ($"tool name {tool.Name}, prefixed? {tool.Prefixed}");
 					if (tool.Prefixed != copyPrefixed) {
 						continue;
 					}
