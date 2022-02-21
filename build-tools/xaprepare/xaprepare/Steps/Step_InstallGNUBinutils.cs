@@ -18,12 +18,14 @@ namespace Xamarin.Android.Prepare
 		{
 			string hostDestinationDirectory = Configurables.Paths.HostBinutilsInstallDir;
 			string windowsDestinationDirectory = Configurables.Paths.WindowsBinutilsInstallDir;
+			string mingwDestinationDirectory = Configurables.Paths.HostLlvmMingwInstallDir;
 
 			bool hostHaveAll = HaveAllBinutils (hostDestinationDirectory);
 			bool windowsHaveAll = HaveAllBinutils (windowsDestinationDirectory, WindowsExtensions);
+			bool haveMingw = HaveLlvmMingw (mingwDestinationDirectory);
 
-			if (hostHaveAll && windowsHaveAll) {
-				Log.StatusLine ("All Binutils are already installed");
+			if (hostHaveAll && windowsHaveAll && haveMingw) {
+				Log.StatusLine ("Xamarin.Android binutils toolchain and LLVM MinGW are already installed");
 				return true;
 			}
 
@@ -49,6 +51,10 @@ namespace Xamarin.Android.Prepare
 
 			if (!windowsHaveAll) {
 				CopyToDestination (context, "Windows", tempDir, windowsDestinationDirectory, "windows", WindowsExtensions);
+			}
+
+			if (!haveMingw) {
+				InstallLlvmMingw (tempDir, mingwDestinationDirectory);
 			}
 
 			return true;
@@ -119,7 +125,7 @@ namespace Xamarin.Android.Prepare
 
 		bool HaveAllBinutils (string dir, string[]? executableExtensions = null)
 		{
-			Log.DebugLine ("Checking if all binutils are installed in {dir}");
+			Log.DebugLine ($"Checking if all binutils are installed in {dir}");
 			foreach (var kvp in Configurables.Defaults.AndroidToolchainPrefixes) {
 				string prefix = kvp.Value;
 				if (!CheckToolsExist (prefix)) {

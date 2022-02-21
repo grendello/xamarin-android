@@ -424,13 +424,18 @@ namespace Xamarin.Android.Prepare
 			else
 				targetFileName = destinationFileName!;
 
-			if (!FileExists (sourceFilePath!))
+			bool specialFile = IsSpecialFile (sourceFilePath!);
+			if (!specialFile && !FileExists (sourceFilePath!))
 				throw new InvalidOperationException ($"Location '{sourceFilePath}' does not point to a file");
 
 			CreateDirectory (destinationDirectory);
 			string destFile = Path.Combine (destinationDirectory, targetFileName);
 			Log.DebugLine ($"Copying file '{sourceFilePath}' to '{destFile}' (overwrite destination: {overwriteDestinationFile})");
-			File.Copy (sourceFilePath, destFile, overwriteDestinationFile);
+			if (specialFile) {
+				CopySpecialFile (sourceFilePath!, destFile, overwriteDestinationFile);
+			} else {
+				File.Copy (sourceFilePath, destFile, overwriteDestinationFile);
+			}
 		}
 
 		public static void FormatSpeed (ulong bytesPerSecond, out decimal value, out string unit)

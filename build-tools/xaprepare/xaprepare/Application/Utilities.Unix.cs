@@ -123,16 +123,23 @@ namespace Xamarin.Android.Prepare
 
 			Log.DebugLine ($"Moving a dangling symlink from {sourcePath} to {destinationPath}");
 			// We have a dangling symlink, we'll just recreate it at the destination and remove the source
+			CopySymlink (sourcePath, destinationPath, sbuf);
+		}
+
+		static void CopySymlink (string sourcePath, string destinationPath, Stat sbuf)
+		{
 			var sb = new StringBuilder (checked((int)sbuf.st_size));
-			ret = Syscall.readlink (sourcePath, sb);
-			if (ret < 0)
+			int ret = Syscall.readlink (sourcePath, sb);
+			if (ret < 0) {
 				throw new IOException ($"Failed to read a symbolic link '{sourcePath}'. {Stdlib.strerror (Stdlib.GetLastError ())}");
+			}
 
 			string sourceLinkContents = sb.ToString ();
 			Log.DebugLine ($"Source symlink {sourcePath} points to: {sourceLinkContents}");
 			ret = Syscall.symlink (sourceLinkContents, destinationPath);
-			if (ret < 0)
+			if (ret < 0) {
 				throw new IOException ($"Failed to create a symbolic link '{destinationPath}' -> '{sourceLinkContents}'. {Stdlib.strerror (Stdlib.GetLastError ())}");
+			}
 		}
 
 		static bool FileIsDanglingSymlink (string path)
@@ -158,6 +165,53 @@ namespace Xamarin.Android.Prepare
 		static int GetRootLength(string path)
 		{
 			return path.Length > 0 && IsDirectorySeparator (path[0]) ? 1 : 0;
+		}
+
+		static string GetLastErrorMessage ()
+		{
+			return Syscall.strerror (Syscall.GetLastError ());
+		}
+
+		static bool StatFile (string path, out Stat sbuf, bool throwOnError = false)
+		{
+			int rv = Syscall.lstat (path, out sbuf);
+			if (rv < 0) {
+				string message = $"Failed to stat file '{path}'. {GetLastErrorMessage ()}";
+				if (throwOnError) {
+					throw new InvalidOperationException (message);
+				} else {
+					Log.DebugLine (message);
+				}
+
+				return false;
+			}
+
+			return true;
+		}
+
+		public static bool IsSpecialFile (string filePath)
+		{
+			Stat sbuf;
+			if (!StatFile (filePath, out sbuf)) {
+				return false;
+			}
+
+			FilePermissions fileType = sbuf.st_mode & FilePermissions.S_IFMT;
+			return fileType != FilePermissions.S_IFREG && fileType != FilePermissions.S_IFDIR;
+		}
+
+		static void CopySpecialFile (string sourcePath, string destinationPath, bool overwriteDestinationFile)
+		{
+			StatFile (sourcePath, out Stat sbuf, throwOnError: true);
+			if (overwriteDestinationFile) {
+				DeleteFile (destinationPath);
+			}
+
+			if ((sbuf.st_mode & FilePermissions.S_IFLNK) == FilePermissions.S_IFLNK) {
+				CopySymlink (sourcePath, destinationPath, sbuf);
+			} else {
+				throw new InvalidOperationException ($"Unsupported special file type (mode: {sbuf.st_mode})");
+			}
 		}
 	}
 }

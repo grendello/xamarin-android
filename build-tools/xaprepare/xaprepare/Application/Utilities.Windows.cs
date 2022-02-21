@@ -169,5 +169,10 @@ namespace Xamarin.Android.Prepare
 
 			return i;
 		}
+
+		public static bool IsSpecialFile (string filePath)
+		{
+			return false;
+		}
 	}
 }

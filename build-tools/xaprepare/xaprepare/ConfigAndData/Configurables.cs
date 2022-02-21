@@ -15,7 +15,7 @@ namespace Xamarin.Android.Prepare
 	//
 	partial class Configurables
 	{
-		const string BinutilsVersion                = "L_13.0.1-4.0.0";
+		public const string BinutilsVersion                = "L1_13.0.1-L2_14.0.0-M_4.0b-5.0.0-alpha1";
 
 		const string MicrosoftOpenJDK11Version      = "11.0.10";
 		const string MicrosoftOpenJDK11Release      = "9.1";
@@ -360,6 +360,8 @@ namespace Xamarin.Android.Prepare
 			public static string AndroidToolchainSysrootLibDirectory => GetCachedPath (ref androidToolchainSysrootLibDirectory, () => Path.Combine (AndroidToolchainRootDirectory, "sysroot", "usr", "lib"));
 			public static string WindowsBinutilsInstallDir           => GetCachedPath (ref windowsBinutilsInstallDir,           () => Path.Combine (InstallMSBuildDir, "binutils"));
 			public static string HostBinutilsInstallDir              => GetCachedPath (ref hostBinutilsInstallDir,              () => Path.Combine (InstallMSBuildDir, ctx.Properties.GetRequiredValue (KnownProperties.HostOS), "binutils"));
+			public static string HostLlvmMingwInstallDir             => GetCachedPath (ref llvmMingwToolchainDirectory,         () => Path.Combine (ctx.Properties.GetRequiredValue (KnownProperties.AndroidToolchainDirectory), "mingw"));
+
 			public static string BinutilsCacheDir                    => ctx.Properties.GetRequiredValue (KnownProperties.AndroidToolchainCacheDirectory);
 			public static string AndroidBuildToolsCacheDir           => ctx.Properties.GetRequiredValue (KnownProperties.AndroidToolchainCacheDirectory);
 
@@ -466,6 +468,7 @@ namespace Xamarin.Android.Prepare
 			static string? netcoreAppRuntimeAndroidX86;
 			static string? netcoreAppRuntimeAndroidX86_64;
 			static string? monodroidSourceDir;
+			static string? llvmMingwToolchainDirectory;
 		}
 	}
 }
