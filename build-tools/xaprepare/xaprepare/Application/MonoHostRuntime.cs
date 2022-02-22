@@ -36,9 +36,7 @@ namespace Xamarin.Android.Prepare
 
 			if (Context.IsMingwHostAbi (Name)) {
 				string prefix;
-				if (Context.Is32BitMingwHostAbi (Name)) {
-					prefix = Context.Properties.GetRequiredValue (KnownProperties.MingwCommandPrefix32);
-				} else if (Context.Is64BitMingwHostAbi (Name)) {
+				if (Context.Is64BitMingwHostAbi (Name)) {
 					prefix = Context.Properties.GetRequiredValue (KnownProperties.MingwCommandPrefix64);
 				} else
 					throw new InvalidOperationException($"MinGW host ABI {Name} is neither 32 nor 64-bit (?!)");

@@ -13,7 +13,7 @@ The module makes it possible to execute non-Linux binaries if the appropriate
 interpreter for the given format is available.
 Your machine is configured to handle Windows PE executables either via Mono or
 Wine. It will make the Xamarin.Android build fail IF you choose to build the
-Windows cross-compilers by enabling the 'mxe-Win32' or 'mxe-Win64' host targets.
+Windows cross-compilers by enabling the 'mxe-WinArm64' or 'mxe-Win64' host targets.
 
 You can disable the binfmt_misc module by issuing the following command as root
 before building Xamarin.Android:

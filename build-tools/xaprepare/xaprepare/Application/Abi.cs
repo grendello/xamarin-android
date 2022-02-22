@@ -23,7 +23,7 @@ namespace Xamarin.Android.Prepare
 
 			new Abi { Name = AbiNames.HostJit.Linux,           Type = AbiType.HostJit,   Is64Bit = false, IsCross = false, IsHost = true,  IsLlvm = false, IsWindows = false },
 			new Abi { Name = AbiNames.HostJit.Darwin,          Type = AbiType.HostJit,   Is64Bit = false, IsCross = false, IsHost = true,  IsLlvm = false, IsWindows = false },
-			new Abi { Name = AbiNames.HostJit.Win32,           Type = AbiType.HostJit,   Is64Bit = false, IsCross = false, IsHost = true,  IsLlvm = false, IsWindows = true },
+			new Abi { Name = AbiNames.HostJit.WinArm64,        Type = AbiType.HostJit,   Is64Bit = true, IsCross = false, IsHost = true,  IsLlvm = false, IsWindows = true },
 			new Abi { Name = AbiNames.HostJit.Win64,           Type = AbiType.HostJit,   Is64Bit = true,  IsCross = false, IsHost = true,  IsLlvm = false, IsWindows = true },
 
 			new Abi { Name = AbiNames.CrossAot.ArmV7a,         Type = AbiType.CrossAot,  Is64Bit = false, IsCross = true,  IsHost = false, IsLlvm = false, IsWindows = false },

@@ -45,9 +45,10 @@
       - Darwin
       - Linux
       - mxe-Win64
+      - mxe-WinArm64
       Note: Why colon? Because comma `,` and semicolon `;` can't be specified on the command-line.
       -->
-    <AndroidSupportedHostJitAbis>Darwin:mxe-Win64</AndroidSupportedHostJitAbis>
+    <AndroidSupportedHostJitAbis>Darwin:mxe-Win64:mxe-WinArm64</AndroidSupportedHostJitAbis>
 
     <!-- C and C++ compilers to emit host-native binaries -->
     <HostCc>clang</HostCc>

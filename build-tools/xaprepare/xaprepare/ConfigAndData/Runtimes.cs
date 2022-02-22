@@ -69,12 +69,6 @@ namespace Xamarin.Android.Prepare
 			),
 
 			new MonoHostRuntime (
-				name: AbiNames.HostJit.Win32,
-				mingw: true,
-				enabledCheck: (Context ctx) => ctx.IsHostJitAbiEnabled (AbiNames.HostJit.Win32)
-			),
-
-			new MonoHostRuntime (
 				name: AbiNames.HostJit.Win64,
 				mingw: true,
 				enabledCheck: (Context ctx) => ctx.IsHostJitAbiEnabled (AbiNames.HostJit.Win64)
@@ -749,7 +743,7 @@ namespace Xamarin.Android.Prepare
 			new RuntimeFile (
 				sourceCreator: (Runtime runtime) => Path.Combine (MonoRuntimesHelpers.GetRootDir (runtime), "lib", "libmonosgen-2.0.dll.a"),
 				destinationCreator: (Runtime runtime) => Path.Combine (GetRuntimeOutputDir (runtime), "libmonosgen-2.0.dll.a"),
-				shouldSkip: (Runtime runtime) => !IsAbi (runtime, AbiNames.HostJit.Win32, AbiNames.HostJit.Win64),
+				shouldSkip: (Runtime runtime) => !IsAbi (runtime, AbiNames.HostJit.WinArm64, AbiNames.HostJit.Win64),
 				strip: false
 			),
 
@@ -787,19 +781,19 @@ namespace Xamarin.Android.Prepare
 				strip: false
 			),
 
-			// Stripped libmono-native for everything except: Mac, Win32, Win64, cross runtimes
+			// Stripped libmono-native for everything except: Mac, WinArm64, Win64, cross runtimes
 			new RuntimeFile (
 				sourceCreator: (Runtime runtime) => GetMonoNativeOutputSourcePath (runtime),
 				destinationCreator: (Runtime runtime) => GetMonoNativeOutputDestinationPath (runtime, debug: false),
-				shouldSkip: (Runtime runtime) => !IsHostOrTargetRuntime (runtime) || IsAbi (runtime, AbiNames.HostJit.Darwin, AbiNames.HostJit.Win32, AbiNames.HostJit.Win64),
+				shouldSkip: (Runtime runtime) => !IsHostOrTargetRuntime (runtime) || IsAbi (runtime, AbiNames.HostJit.Darwin, AbiNames.HostJit.WinArm64, AbiNames.HostJit.Win64),
 				type: RuntimeFileType.StrippableBinary
 			),
 
-			// Untripped libmono-native for everything except: Mac, Win32, Win64, cross runtimes
+			// Untripped libmono-native for everything except: Mac, WinArm64, Win64, cross runtimes
 			new RuntimeFile (
 				sourceCreator: (Runtime runtime) => GetMonoNativeOutputSourcePath (runtime),
 				destinationCreator: (Runtime runtime) => GetMonoNativeOutputDestinationPath (runtime, debug: true),
-				shouldSkip: (Runtime runtime) => !IsHostOrTargetRuntime (runtime) || IsAbi (runtime, AbiNames.HostJit.Darwin, AbiNames.HostJit.Win32, AbiNames.HostJit.Win64),
+				shouldSkip: (Runtime runtime) => !IsHostOrTargetRuntime (runtime) || IsAbi (runtime, AbiNames.HostJit.Darwin, AbiNames.HostJit.WinArm64, AbiNames.HostJit.Win64),
 				type: RuntimeFileType.StrippableBinary,
 				strip: false
 			),
@@ -808,7 +802,7 @@ namespace Xamarin.Android.Prepare
 			new RuntimeFile (
 				sourceCreator: (Runtime runtime) => Path.Combine (MonoRuntimesHelpers.GetRootDir (runtime), "bin", "mono"),
 				destinationCreator: (Runtime runtime) => Path.Combine (runtime.Name, "mono"),
-				shouldSkip: (Runtime runtime) => !IsRuntimeType<MonoHostRuntime> (runtime) || IsAbi (runtime, AbiNames.HostJit.Win32, AbiNames.HostJit.Win64),
+				shouldSkip: (Runtime runtime) => !IsRuntimeType<MonoHostRuntime> (runtime) || IsAbi (runtime, AbiNames.HostJit.WinArm64, AbiNames.HostJit.Win64),
 				type: RuntimeFileType.StrippableBinary,
 				strip: false
 			),

@@ -270,10 +270,10 @@
       </_CompileCommandsDir>
 
       <!-- clang-tidy won't work with mingw builds, we need to disable them -->
-      <_CompileCommandsDir Include="$(IntermediateOutputPath)%(_HostRuntime.OutputDirectory)-Debug" Condition=" '%(_HostRuntime.Identity)' != 'host-mxe-Win64' And '%(_HostRuntime.Identity)' != 'host-mxe-Win32' ">
+      <_CompileCommandsDir Include="$(IntermediateOutputPath)%(_HostRuntime.OutputDirectory)-Debug" Condition=" '%(_HostRuntime.Identity)' != 'host-mxe-Win64' And '%(_HostRuntime.Identity)' != 'host-mxe-WinArm64' ">
         <LogTag>%(_HostRuntime.OutputDirectory)-Debug</LogTag>
       </_CompileCommandsDir>
-      <_CompileCommandsDir Include="$(IntermediateOutputPath)%(_HostRuntime.OutputDirectory)-Release" Condition=" '%(_HostRuntime.Identity)' != 'host-mxe-Win64' And '%(_HostRuntime.Identity)' != 'host-mxe-Win32' ">
+      <_CompileCommandsDir Include="$(IntermediateOutputPath)%(_HostRuntime.OutputDirectory)-Release" Condition=" '%(_HostRuntime.Identity)' != 'host-mxe-Win64' And '%(_HostRuntime.Identity)' != 'host-mxe-WinArm64' ">
         <LogTag>%(_HostRuntime.OutputDirectory)-Release</LogTag>
       </_CompileCommandsDir>
     </ItemGroup>

@@ -290,7 +290,7 @@ namespace Xamarin.Android.Prepare
 		///   <c>true</c> if any Windows ABI targets are enabled
 		/// </summary>
 		public bool WindowsJitAbisEnabled {
-			get => IsHostJitAbiEnabled (AbiNames.HostJit.Win32) || IsHostJitAbiEnabled (AbiNames.HostJit.Win64);
+			get => IsHostJitAbiEnabled (AbiNames.HostJit.WinArm64) || IsHostJitAbiEnabled (AbiNames.HostJit.Win64);
 		}
 
 		/// <summary>
@@ -546,16 +546,6 @@ namespace Xamarin.Android.Prepare
 		}
 
 		/// <summary>
-		///   Checks whether <paramref name="abiName"/> refers to a host OS Windows 32-bit cross-compiler target
-		///   <seealso cref="Xamarin.Android.Prepare.AbiNames.TargetAot"/>
-		///   <seealso cref="Xamarin.Android.Prepare.Abi"/>
-		/// </summary>
-		public bool Is32BitMingwHostAbi (string abiName)
-		{
-			return AbiNames.All32BitMingwHostAbis.Contains (abiName);
-		}
-
-		/// <summary>
 		///   Checks whether <paramref name="abiName"/> refers to a host OS Windows 64-bit cross-compiler target
 		///   <seealso cref="Xamarin.Android.Prepare.AbiNames.TargetAot"/>
 		///   <seealso cref="Xamarin.Android.Prepare.Abi"/>
@@ -563,6 +553,16 @@ namespace Xamarin.Android.Prepare
 		public bool Is64BitMingwHostAbi (string abiName)
 		{
 			return AbiNames.All64BitMingwHostAbis.Contains (abiName);
+		}
+
+		/// <summary>
+		///   Checks whether <paramref name="abiName"/> refers to a host OS Windows ARM64 cross-compiler target
+		///   <seealso cref="Xamarin.Android.Prepare.AbiNames.TargetAot"/>
+		///   <seealso cref="Xamarin.Android.Prepare.Abi"/>
+		/// </summary>
+		public bool IsArm64MingwHostAbi (string abiName)
+		{
+			return String.Compare (abiName, AbiNames.HostJit.WinArm64, StringComparison.OrdinalIgnoreCase) == 0;
 		}
 
 		/// <summary>

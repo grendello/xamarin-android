@@ -10,7 +10,7 @@
 // as well as the `lock_guard` and `mutex` classes. However, some versions of MinGW, even though
 // they have the required files, do not declare `mutex` because the `gthreads` feature is not
 // enabled. Thus the complicated `#if` below.
-#if !defined (ANDROID) && (!defined (WINDOWS) || (defined (WINDOWS) && defined (_GLIBCXX_HAS_GTHREADS)))
+#if !defined (ANDROID) && (!defined (WINDOWS) || (defined (WINDOWS) && defined (__clang__)) || (defined (WINDOWS) && defined (_GLIBCXX_HAS_GTHREADS)))
 #define HAVE_WORKING_MUTEX 1
 #endif
 

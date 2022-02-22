@@ -29,7 +29,7 @@ namespace Xamarin.Android.Prepare
 				(string dependencyDescription, string libraryName) = kvp.Value;
 				bool disabled, success;
 
-				(disabled, success) = await ConfigureBuildAndInstall (context, AbiNames.HostJit.Win32, dependencyDir, dependencyDescription, libraryName);
+				(disabled, success) = await ConfigureBuildAndInstall (context, AbiNames.HostJit.WinArm64, dependencyDir, dependencyDescription, libraryName);
 				if (!disabled && !success)
 					return false;
 
@@ -49,7 +49,7 @@ namespace Xamarin.Android.Prepare
 			}
 
 			Log.StatusLine ($"  {context.Characters.Bullet} {dependencyDescription}");
-			bool sixtyFourBit = context.Is64BitMingwHostAbi (abiName);
+			bool arm64 = context.IsArm64MingwHostAbi (abiName);
 			string sourceDir = Path.Combine (Configurables.Paths.ExternalDir, dependencyDir);
 			string buildDir = Path.Combine (Configurables.Paths.BuildBinDir, $"{dependencyDir}-{abiName}");
 
@@ -57,10 +57,11 @@ namespace Xamarin.Android.Prepare
 			Log.DebugLine ($"{dependencyDir} build directory: {buildDir}");
 
 			string outputDir;
-			if (sixtyFourBit)
+			if (arm64) {
+				outputDir = "arm64";
+			} else {
 				outputDir = "x86_64";
-			else
-				outputDir = "x86";
+			}
 			outputDir = Path.Combine (context.Properties.GetRequiredValue (KnownProperties.MingwDependenciesRootDirectory), outputDir);
 			Log.DebugLine ($"{dependencyDir} output directory: {outputDir}");
 
@@ -76,7 +77,7 @@ namespace Xamarin.Android.Prepare
 			Utilities.CreateDirectory (buildDir);
 
 			Log.StatusLine ("    configuring...");
-			List<string> arguments = GetCmakeArguments (context, buildDir, outputDir, sixtyFourBit);
+			List<string> arguments = GetCmakeArguments (context, buildDir, outputDir, arm64);
 			string logTag = $"{dependencyDir}-{abiName}-configure";
 			var cmake = new CMakeRunner (context);
 			bool result = await cmake.Run (
@@ -119,14 +120,14 @@ namespace Xamarin.Android.Prepare
 			return (false, true);
 		}
 
-		List<string> GetCmakeArguments (Context context, string workingDirectory, string outputDirectory, bool sixtyFourBit)
+		List<string> GetCmakeArguments (Context context, string workingDirectory, string outputDirectory, bool arm64)
 		{
 			string cmakeToolchainFile;
 
-			if (sixtyFourBit) {
-				cmakeToolchainFile = Configurables.Paths.Mingw64CmakePath;
+			if (arm64) {
+				cmakeToolchainFile = Configurables.Paths.MingwArm64CmakePath;
 			} else {
-				cmakeToolchainFile = Configurables.Paths.Mingw32CmakePath;
+				cmakeToolchainFile = Configurables.Paths.Mingw64CmakePath;
 			}
 
 			return new List <string> {

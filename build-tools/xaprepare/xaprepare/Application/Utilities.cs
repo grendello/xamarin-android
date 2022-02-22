@@ -374,7 +374,9 @@ namespace Xamarin.Android.Prepare
 			Directory.CreateDirectory (directoryPath);
 		}
 
-		public static void CopyFilesSimple (IEnumerable<string> sourceFiles, string destinationDirectory, bool overwriteDestinationFile = true)
+		// All the CopyFile incarnations ignore special files (e.g. symlinks) by default. This is for backward compatibility with how xaprepare worked
+		// since its introduction.  The default behavior is to follow symbolic links and copy their target instead.
+		public static void CopyFilesSimple (IEnumerable<string> sourceFiles, string destinationDirectory, bool overwriteDestinationFile = true, bool handleSpecialFiles = false)
 		{
 			if (sourceFiles == null)
 				throw new ArgumentNullException (nameof (sourceFiles));
@@ -383,21 +385,21 @@ namespace Xamarin.Android.Prepare
 
 			CreateDirectory (destinationDirectory);
 			foreach (string src in sourceFiles) {
-				CopyFileInternal (src, destinationDirectory, destinationFileName: String.Empty, overwriteDestinationFile: overwriteDestinationFile);
+				CopyFileInternal (src, destinationDirectory, destinationFileName: String.Empty, overwriteDestinationFile: overwriteDestinationFile, handleSpecialFiles: handleSpecialFiles);
 			}
 		}
 
-		public static void CopyFile (string sourceFilePath, string destinationFilePath, bool overwriteDestinationFile = true)
+		public static void CopyFile (string sourceFilePath, string destinationFilePath, bool overwriteDestinationFile = true, bool handleSpecialFiles = false)
 		{
 			if (String.IsNullOrEmpty (sourceFilePath))
 				throw new ArgumentException ("must not be null or empty", nameof (sourceFilePath));
 			if (String.IsNullOrEmpty (destinationFilePath))
 				throw new ArgumentException ("must not be null or empty", nameof (destinationFilePath));
 
-			CopyFileInternal (sourceFilePath, Path.GetDirectoryName (destinationFilePath), Path.GetFileName (destinationFilePath), overwriteDestinationFile);
+			CopyFileInternal (sourceFilePath, Path.GetDirectoryName (destinationFilePath), Path.GetFileName (destinationFilePath), overwriteDestinationFile, handleSpecialFiles: handleSpecialFiles);
 		}
 
-		public static void CopyFileToDir (string sourceFilePath, string destinationDirectory, string? destinationFileName = null, bool overwriteDestinationFile = true)
+		public static void CopyFileToDir (string sourceFilePath, string destinationDirectory, string? destinationFileName = null, bool overwriteDestinationFile = true, bool handleSpecialFiles = false)
 		{
 			if (String.IsNullOrEmpty (sourceFilePath))
 				throw new ArgumentException ("must not be null or empty", nameof (sourceFilePath));
@@ -405,10 +407,10 @@ namespace Xamarin.Android.Prepare
 				throw new ArgumentException ("must not be null or empty", nameof (destinationDirectory));
 
 			CreateDirectory (destinationDirectory);
-			CopyFileInternal (sourceFilePath, destinationDirectory, destinationFileName ?? String.Empty, overwriteDestinationFile);
+			CopyFileInternal (sourceFilePath, destinationDirectory, destinationFileName ?? String.Empty, overwriteDestinationFile, handleSpecialFiles: handleSpecialFiles);
 		}
 
-		static void CopyFileInternal (string? sourceFilePath, string? destinationDirectory, string? destinationFileName, bool overwriteDestinationFile)
+		static void CopyFileInternal (string? sourceFilePath, string? destinationDirectory, string? destinationFileName, bool overwriteDestinationFile, bool handleSpecialFiles)
 		{
 			if (String.IsNullOrEmpty (sourceFilePath)) {
 				throw new ArgumentException ("must not be null or empty", nameof (sourceFilePath));
@@ -431,7 +433,7 @@ namespace Xamarin.Android.Prepare
 			CreateDirectory (destinationDirectory);
 			string destFile = Path.Combine (destinationDirectory, targetFileName);
 			Log.DebugLine ($"Copying file '{sourceFilePath}' to '{destFile}' (overwrite destination: {overwriteDestinationFile})");
-			if (specialFile) {
+			if (handleSpecialFiles && specialFile) {
 				CopySpecialFile (sourceFilePath!, destFile, overwriteDestinationFile);
 			} else {
 				File.Copy (sourceFilePath, destFile, overwriteDestinationFile);

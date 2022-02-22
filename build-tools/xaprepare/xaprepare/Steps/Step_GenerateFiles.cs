@@ -59,8 +59,8 @@ namespace Xamarin.Android.Prepare
 						new GeneratedMonodroidCmakeFiles (Configurables.Paths.BuildBinDir),
 						Get_Ndk_projitems (context),
 						Get_XABuildConfig_cs (context),
-						Get_mingw_32_cmake (context),
 						Get_mingw_64_cmake (context),
+						Get_mingw_arm64_cmake (context),
 						Get_MonoGitHash_props (context),
 					};
 				}
@@ -203,20 +203,20 @@ namespace Xamarin.Android.Prepare
 			);
 		}
 
-		GeneratedFile Get_mingw_32_cmake (Context context)
-		{
-			return Get_mingw_cmake (context, Configurables.Paths.Mingw32CmakeTemplatePath, Configurables.Paths.Mingw32CmakePath);
-		}
-
 		GeneratedFile Get_mingw_64_cmake (Context context)
 		{
 			return Get_mingw_cmake (context, Configurables.Paths.Mingw64CmakeTemplatePath, Configurables.Paths.Mingw64CmakePath);
 		}
 
+		GeneratedFile Get_mingw_arm64_cmake (Context context)
+		{
+			return Get_mingw_cmake (context, Configurables.Paths.MingwArm64CmakeTemplatePath, Configurables.Paths.MingwArm64CmakePath);
+		}
+
 		GeneratedFile Get_mingw_cmake (Context context, string input, string output)
 		{
 			var replacements = new Dictionary<string, string> (StringComparer.Ordinal) {
-				{ "@HOMEBREW_PREFIX@", context.OS.HomebrewPrefix ?? String.Empty },
+				{ "@LLVM_MINGW_DIR@", Configurables.Paths.HostLlvmMingwInstallDir },
 			};
 
 			return new GeneratedPlaceholdersFile (replacements, Path.Combine (input), Path.Combine (output));

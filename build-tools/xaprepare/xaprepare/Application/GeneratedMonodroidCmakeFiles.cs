@@ -58,7 +58,7 @@ namespace Xamarin.Android.Prepare
 
 		static readonly Dictionary<string, string> HostAbis = new Dictionary<string, string> (StringComparer.Ordinal) {
 			{ Context.Instance.OS.Type, String.Empty },
-			{ AbiNames.HostJit.Win32, String.Empty },
+			{ AbiNames.HostJit.WinArm64, String.Empty },
 			{ AbiNames.HostJit.Win64, String.Empty },
 		};
 
@@ -255,8 +255,8 @@ namespace Xamarin.Android.Prepare
 				bool forMxe = false;
 
 				if (command.IsHost) {
-					if (String.Compare (abi, AbiNames.HostJit.Win32, StringComparison.OrdinalIgnoreCase) == 0) {
-						mxeBitness = "32";
+					if (String.Compare (abi, AbiNames.HostJit.WinArm64, StringComparison.OrdinalIgnoreCase) == 0) {
+						mxeBitness = "arm64";
 					} else if (String.Compare (abi, AbiNames.HostJit.Win64, StringComparison.OrdinalIgnoreCase) == 0) {
 						mxeBitness = "64";
 					}
@@ -507,11 +507,11 @@ namespace Xamarin.Android.Prepare
 				flags.Append (" ");
 				flags.Append (String.Join (" ", CmakeBuilds.MonodroidMxeCommonFlagsBitness));
 
-				MSBuildMingwReplacements["@BITNESS@"] = "32";
-				WriteProperty (sw, propertyIndent, "_CmakeMxeCommonFlags32", flags, MSBuildMingwReplacements);
-
 				MSBuildMingwReplacements["@BITNESS@"] = "64";
 				WriteProperty (sw, propertyIndent, "_CmakeMxeCommonFlags64", flags, MSBuildMingwReplacements);
+
+				MSBuildMingwReplacements["@BITNESS@"] = "arm64";
+				WriteProperty (sw, propertyIndent, "_CmakeMxeCommonFlagsArm64", flags, MSBuildMingwReplacements);
 
 				sw.WriteLine ("  </PropertyGroup>");
 			}

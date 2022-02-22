@@ -1,60 +1,46 @@
 using System;
 using System.IO;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace Xamarin.Android.Prepare
 {
-	partial class Step_InstallGNUBinutils : StepWithDownloadProgress
+	partial class Step_InstallGNUBinutils : StepXamarinAndroidToolchain
 	{
 		static readonly string[]? WindowsExtensions = {".exe", ".cmd"};
-		static readonly string ProductName = $"Xamarin.Android Toolchain {Configurables.Defaults.BinutilsVersion}";
 
-		public Step_InstallGNUBinutils ()
-			: base ("Install Xamarin.Android Toolchain")
+		protected override string ProductName => $"Xamarin.Android Toolchain {Configurables.Defaults.BinutilsVersion}";
+
+		public Step_InstallGNUBinutils (XamarinAndroidToolchainState state)
+			: base ("Install Xamarin.Android Toolchain", state)
 		{}
 
 		protected override async Task<bool> Execute (Context context)
 		{
 			string hostDestinationDirectory = Configurables.Paths.HostBinutilsInstallDir;
 			string windowsDestinationDirectory = Configurables.Paths.WindowsBinutilsInstallDir;
-			string mingwDestinationDirectory = Configurables.Paths.HostLlvmMingwInstallDir;
 
 			bool hostHaveAll = HaveAllBinutils (hostDestinationDirectory);
 			bool windowsHaveAll = HaveAllBinutils (windowsDestinationDirectory, WindowsExtensions);
-			bool haveMingw = HaveLlvmMingw (mingwDestinationDirectory);
 
-			if (hostHaveAll && windowsHaveAll && haveMingw) {
-				Log.StatusLine ("Xamarin.Android binutils toolchain and LLVM MinGW are already installed");
+			if (hostHaveAll && windowsHaveAll) {
+				Log.StatusLine ("Xamarin.Android binutils toolchain is already installed");
 				return true;
 			}
 
-			string packageName = Path.GetFileName (Configurables.Urls.BinutilsArchive.LocalPath);
-			string localArchivePath = Path.Combine (Configurables.Paths.BinutilsCacheDir, packageName);
-
-			if (!await DownloadBinutils (context, localArchivePath, Configurables.Urls.BinutilsArchive)) {
+			if (!await DownloadToolchain (context)) {
 				return false;
 			}
 
-			string tempDir = Path.Combine (Path.GetTempPath (), "xaprepare-binutils");
-			Utilities.DeleteDirectorySilent (tempDir);
-			Utilities.CreateDirectory (tempDir);
-
-			Log.DebugLine ($"Unpacking {ProductName} archive {localArchivePath} into {tempDir}");
-			if (!await Utilities.Unpack (localArchivePath, tempDir, cleanDestinatioBeforeUnpacking: true)) {
+			if (!await UnpackToolchain ()) {
 				return false;
 			}
 
 			if (!hostHaveAll) {
-				CopyToDestination (context, "Host", tempDir, hostDestinationDirectory, executableExtensions: ExecutableExtensions);
+				CopyToDestination (context, "Host", State.UnpackedDir, hostDestinationDirectory, executableExtensions: ExecutableExtensions);
 			}
 
 			if (!windowsHaveAll) {
-				CopyToDestination (context, "Windows", tempDir, windowsDestinationDirectory, "windows", WindowsExtensions);
-			}
-
-			if (!haveMingw) {
-				InstallLlvmMingw (tempDir, mingwDestinationDirectory);
+				CopyToDestination (context, "Windows", State.UnpackedDir, windowsDestinationDirectory, "windows", WindowsExtensions);
 			}
 
 			return true;
@@ -92,35 +78,6 @@ namespace Xamarin.Android.Prepare
 					File.WriteAllText (versionMarkerPath, DateTime.UtcNow.ToString ());
 				}
 			}
-		}
-
-		async Task<bool> DownloadBinutils (Context context, string localPackagePath, Uri url)
-		{
-			if (Utilities.FileExists (localPackagePath)) {
-				Log.StatusLine ($"{ProductName} archive already downloaded");
-				return true;
-			}
-
-			Log.StatusLine ($"Downloading {ProductName} from ", url.ToString (), tailColor: ConsoleColor.White);
-			(bool success, ulong size, HttpStatusCode status) = await Utilities.GetDownloadSizeWithStatus (url);
-			if (!success) {
-				if (status == HttpStatusCode.NotFound) {
-					Log.ErrorLine ($"{ProductName} archive URL not found");
-					return false;
-				}
-				Log.WarningLine ($"Failed to obtain {ProductName} size. HTTP status code: {status} ({(int)status})");
-			}
-
-			DownloadStatus downloadStatus = Utilities.SetupDownloadStatus (context, size, context.InteractiveSession);
-			Log.StatusLine ($"  {context.Characters.Link} {url}", ConsoleColor.White);
-			await Download (context, url, localPackagePath, ProductName, Path.GetFileName (localPackagePath), downloadStatus);
-
-			if (!File.Exists (localPackagePath)) {
-				Log.ErrorLine ($"Download of {ProductName} from {url} failed.");
-				return false;
-			}
-
-			return true;
 		}
 
 		bool HaveAllBinutils (string dir, string[]? executableExtensions = null)
@@ -176,7 +133,6 @@ namespace Xamarin.Android.Prepare
 
 			foreach (string executableExtension in executableExtensions) {
 				string binary = Path.Combine (sourcePath, $"{baseName}{executableExtension}");
-				Console.WriteLine ($"Checking: {binary}");
 				if (!Utilities.FileExists (binary)) {
 					continue;
 				}

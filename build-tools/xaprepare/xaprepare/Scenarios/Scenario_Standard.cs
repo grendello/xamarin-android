@@ -18,6 +18,8 @@ namespace Xamarin.Android.Prepare
 			if (context == null)
 				throw new ArgumentNullException (nameof (context));
 
+			var xatState = new XamarinAndroidToolchainState ();
+
 			Steps.Add (new Step_ShowEnabledRuntimes ());
 			Steps.Add (new Step_InstallDotNetPreview ());
 			Steps.Add (new Step_InstallAdoptOpenJDK8 ());
@@ -29,16 +31,16 @@ namespace Xamarin.Android.Prepare
 			Steps.Add (new Step_PrepareExternalJavaInterop ());
 			Steps.Add (new Step_PrepareLocal ());
 			Steps.Add (new Step_DownloadMonoArchive ());
-			AddRequiredOSSpecificSteps (true);
+			AddRequiredOSSpecificSteps (true, xatState);
 			Steps.Add (new Step_InstallMonoRuntimes ());
 
 			// The next two steps MUST be after InstallMonoRuntimes above since the latter cleans up the target
 			// directory where the NDK binutils are installed
-			Steps.Add (new Step_InstallGNUBinutils ());
+			Steps.Add (new Step_InstallGNUBinutils (xatState));
 			Steps.Add (new Step_GenerateCGManifest ());
 			Steps.Add (new Step_Get_Android_BuildTools ());
 
-			AddRequiredOSSpecificSteps (false);
+			AddRequiredOSSpecificSteps (false, xatState);
 		}
 
 		protected override void AddEndSteps (Context context)
@@ -47,6 +49,6 @@ namespace Xamarin.Android.Prepare
 			Steps.Add (new Step_GenerateFiles (atBuildStart: false));
 		}
 
-		partial void AddRequiredOSSpecificSteps (bool beforeBundle);
+		partial void AddRequiredOSSpecificSteps (bool beforeBundle, XamarinAndroidToolchainState xatState);
 	}
 }

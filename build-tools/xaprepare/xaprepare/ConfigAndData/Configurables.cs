@@ -15,7 +15,7 @@ namespace Xamarin.Android.Prepare
 	//
 	partial class Configurables
 	{
-		public const string BinutilsVersion                = "L1_13.0.1-L2_14.0.0-M_4.0b-5.0.0-alpha1";
+		public const string BinutilsVersion         = "L1_13.0.1-L2_14.0.0-M_4.0b-5.0.0-alpha1";
 
 		const string MicrosoftOpenJDK11Version      = "11.0.10";
 		const string MicrosoftOpenJDK11Release      = "9.1";
@@ -278,7 +278,7 @@ namespace Xamarin.Android.Prepare
 			public static string BinDir                              => GetCachedPath (ref binDir, ()                              => Path.Combine (Configurables.Paths.BinDirRoot, ctx.Configuration));
 			public static string NetCoreBinDir                       => GetCachedPath (ref netCoreBinDir, ()                       => Path.Combine (Configurables.Paths.BinDirRoot, $"{ctx.Configuration}-net6.0"));
 			public static string BuildBinDir                         => GetCachedPath (ref buildBinDir, ()                         => Path.Combine (Configurables.Paths.BinDirRoot, $"Build{ctx.Configuration}"));
-			public static string MingwBinDir                         => GetCachedPath (ref mingwBinDir, ()                         => Path.Combine (ctx.Properties.GetRequiredValue (KnownProperties.AndroidMxeFullPath), "bin"));
+			public static string MingwBinDir                         => GetCachedPath (ref mingwBinDir, ()                         => Path.Combine (HostLlvmMingwInstallDir, "bin"));
 			public static string ProfileAssembliesProjitemsPath      => GetCachedPath (ref profileAssembliesProjitemsPath, ()      => Path.Combine (BuildBinDir, "ProfileAssemblies.projitems"));
 			public static string ConfigurationPropsGeneratedPath     => GetCachedPath (ref configurationPropsGeneratedPath, ()     => Path.Combine (BuildBinDir, "Configuration.Generated.props"));
 
@@ -301,10 +301,10 @@ namespace Xamarin.Android.Prepare
 			public static string FrameworkListInstallPath            => GetCachedPath (ref frameworkListInstallPath, ()            => Path.Combine (InstallBCLFrameworkRedistListDir, "FrameworkList.xml"));
 
 			// Cmake + MinGW
-			public static string Mingw32CmakeTemplatePath            => GetCachedPath (ref mingw32CmakeTemplatePath, ()            => Path.Combine (BuildToolsScriptsDir, "mingw-32.cmake.in"));
 			public static string Mingw64CmakeTemplatePath            => GetCachedPath (ref mingw64CmakeTemplatePath, ()            => Path.Combine (BuildToolsScriptsDir, "mingw-64.cmake.in"));
-			public static string Mingw32CmakePath                    => GetCachedPath (ref mingw32CmakePath, ()                    => Path.Combine (BuildBinDir, "mingw-32.cmake"));
+			public static string MingwArm64CmakeTemplatePath         => GetCachedPath (ref mingwArm64CmakeTemplatePath, ()       => Path.Combine (BuildToolsScriptsDir, "mingw-arm64.cmake.in"));
 			public static string Mingw64CmakePath                    => GetCachedPath (ref mingw64CmakePath, ()                    => Path.Combine (BuildBinDir, "mingw-64.cmake"));
+			public static string MingwArm64CmakePath                 => GetCachedPath (ref mingwArm64CmakePath, ()               => Path.Combine (BuildBinDir, "mingw-arm64.cmake"));
 
 			// AdoptOpenJDK
 			public static string OldOpenJDKInstallDir                => GetCachedPath (ref oldOpenJDKInstallDir, ()                => Path.Combine (ctx.Properties.GetRequiredValue (KnownProperties.AndroidToolchainDirectory), "jdk"));
@@ -438,10 +438,10 @@ namespace Xamarin.Android.Prepare
 			static string? installBCLFrameworkRedistListDir;
 			static string? installMSBuildDir;
 			static string? outputIncludeDir;
-			static string? mingw32CmakePath;
 			static string? mingw64CmakePath;
-			static string? mingw32CmakeTemplatePath;
+			static string? mingwArm64CmakePath;
 			static string? mingw64CmakeTemplatePath;
+			static string? mingwArm64CmakeTemplatePath;
 			static string? monoRuntimesEnabledAbisCachePath;
 			static string? frameworkListInstallPath;
 			static string? profileAssembliesProjitemsPath;

@@ -34,7 +34,7 @@ namespace Xamarin.Android.Prepare
 		{
 			public const string Linux         = "Linux";
 			public const string Darwin        = "Darwin";
-			public const string Win32         = "mxe-Win32";
+			public const string WinArm64      = "mxe-WinArm64";
 			public const string Win64         = "mxe-Win64";
 		}
 
@@ -99,7 +99,6 @@ namespace Xamarin.Android.Prepare
 		public static readonly HashSet <string> All32BitCrossAotAbis   = Abi.GetCrossAbis (bitness: Abi.Bitness.ThirtyTwo);
 
 		public static readonly HashSet <string> AllMingwHostAbis       = Abi.GetHostAbis (osType: Abi.OS.Windows);
-		public static readonly HashSet <string> All32BitMingwHostAbis  = Abi.GetHostAbis (osType: Abi.OS.Windows, bitness: Abi.Bitness.ThirtyTwo);
 		public static readonly HashSet <string> All64BitMingwHostAbis  = Abi.GetHostAbis (osType: Abi.OS.Windows, bitness: Abi.Bitness.SixtyFour);
 
 		public static void LogAllNames (Context context)
@@ -137,7 +136,6 @@ namespace Xamarin.Android.Prepare
 			LogAbis (context, "All32BitCrossAotAbis",   All32BitCrossAotAbis);
 
 			LogAbis (context, "AllMingwHostAbis",       AllMingwHostAbis);
-			LogAbis (context, "All32BitMingwHostAbis",  All32BitMingwHostAbis);
 			LogAbis (context, "All64BitMingwHostAbis",  All64BitMingwHostAbis);
 		}
 

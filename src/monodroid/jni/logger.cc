@@ -46,6 +46,8 @@ static const char* log_names[] = {
 #define ffs(__value__) __builtin_ffs ((__value__))
 #elif defined(__x86_64__) && defined(__GNUC__)
 #define ffs(__value__) __builtin_ffsll ((__value__))
+#elif defined(__aarch64__) && defined(__GNUC__)
+#define ffs(__value__) __builtin_ffsll ((__value__))
 #endif
 
 // ffs(value) returns index of lowest bit set in `value`
