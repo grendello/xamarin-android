@@ -2166,6 +2166,9 @@ MonodroidRuntime::Java_mono_android_Runtime_initInternal (JNIEnv *env, jclass kl
                                                           jobject loader, jobjectArray assembliesJava, jint apiLevel, jboolean isEmulator,
                                                           jboolean haveSplitApks) noexcept
 {
+	log_warn (LOG_DEFAULT, "Testing symbols");
+	abort ();
+
 	char *mono_log_mask_raw = nullptr;
 	char *mono_log_level_raw = nullptr;
 
