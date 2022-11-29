@@ -126,6 +126,10 @@ MonoCoreRuntimeProperties MonodroidRuntime::monovm_core_properties = {
 #endif
 #endif // def NET6
 
+#if defined (NET6)
+bool MonodroidRuntime::dotnet_tracing_component_present = false;
+#endif
+
 #ifdef WINDOWS
 static const char* get_xamarin_android_msbuild_path (void);
 const char *BasicAndroidSystem::SYSTEM_LIB_PATH = get_xamarin_android_msbuild_path();
@@ -1204,9 +1208,30 @@ MonodroidRuntime::monodroid_dlopen_log_and_return (void *handle, char **err, con
 }
 
 #if defined (NET6) && defined (ANDROID)
+force_inline bool
+MonodroidRuntime::can_load_dso (const char *name)
+{
+#if defined (RELEASE)
+	if (strstr (name, SharedConstants::TRACING_COMPONENT_NAME) != nullptr) {
+		return dotnet_tracing_component_present;
+	}
+
+	if (strstr (name, SharedConstants::HOT_RELOAD_COMPONENT_NAME) != nullptr) {
+		return false; // hot reload is never used in Release builds
+	}
+#endif // def RELEASE
+
+	return true;
+}
+
 force_inline void*
 MonodroidRuntime::monodroid_dlopen (const char *name, int flags, char **err)
 {
+	if (!can_load_dso (name)) {
+		log_debug (LOG_ASSEMBLY, "monodroid_dlopen: DSO %s known not to be present, returning early", name);
+		return nullptr;
+	}
+
 	unsigned int dl_flags = monodroidRuntime.convert_dl_flags (flags);
 	void *h = androidSystem.load_dso_from_any_directories (name, dl_flags);
 	if (h != nullptr) {
@@ -1245,7 +1270,7 @@ MonodroidRuntime::monodroid_dlopen (const char *name, int flags, char **err)
 void*
 MonodroidRuntime::monodroid_dlopen (const char *name, int flags, char **err, [[maybe_unused]] void *user_data)
 {
-	log_warn (LOG_DEFAULT, "MonodroidRuntime::monodroid_dlopen (\"%s\", 0x%x, %p, %p)", name, flags, err, user_data);
+	log_info (LOG_ASSEMBLY, "MonodroidRuntime::monodroid_dlopen (\"%s\", 0x%x, %p, %p)", name, flags, err, user_data);
 	if (name == nullptr) {
 		log_warn (LOG_ASSEMBLY, "monodroid_dlopen got a null name. This is not supported in NET6+");
 		return nullptr;

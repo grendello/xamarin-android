@@ -53,6 +53,10 @@ EmbeddedAssemblies::zip_load_entries (int fd, const char *apk_name, monodroid_sh
 	dynamic_local_string<SENSIBLE_PATH_MAX> entry_name;
 #if defined (NET6)
 	bool runtime_config_blob_found = false;
+
+#if defined (RELEASE)
+	bool tracing_component_found = false;
+#endif // def RELEASE
 #endif // def NET6
 
 	// clang-tidy claims we have a leak in the loop:
@@ -98,6 +102,13 @@ EmbeddedAssemblies::zip_load_entries (int fd, const char *apk_name, monodroid_sh
 				continue;
 			}
 		}
+
+#if defined (RELEASE)
+		if (!tracing_component_found && utils.ends_with (file_name, ".so") && utils.contains (file_name, SharedConstants::TRACING_COMPONENT_NAME)) {
+			tracing_component_found = true;
+			MonodroidRuntime::have_dotnet_tracing_component ();
+		}
+#endif // def RELEASE
 #endif // def NET6
 
 		// assemblies must be 4-byte aligned, or Bad Things happen

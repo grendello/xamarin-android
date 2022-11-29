@@ -17,6 +17,8 @@ namespace xamarin::android::internal
 	public:
 #if defined (NET6)
 		static constexpr char RUNTIME_CONFIG_BLOB_NAME[] = "rc.bin";
+		static constexpr char HOT_RELOAD_COMPONENT_NAME[] = "component-hot_reload";
+		static constexpr char TRACING_COMPONENT_NAME[] = "component-diagnostics_tracing";
 #endif // def NET6
 
 #if defined (ANDROID) || defined (__linux__) || defined (__linux)

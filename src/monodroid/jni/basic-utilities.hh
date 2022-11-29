@@ -109,6 +109,12 @@ namespace xamarin::android
 			return p != nullptr && p [N - 1] == '\0';
 		}
 
+		template<size_t N>
+		bool contains (const char *str, const char (&fragment)[N]) const noexcept
+		{
+			return strstr (str, fragment) != nullptr;
+		}
+
 		void *xmalloc (size_t size)
 		{
 			return ::xmalloc (size);

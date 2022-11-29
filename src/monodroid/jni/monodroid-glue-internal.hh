@@ -197,6 +197,13 @@ namespace xamarin::android::internal
 		void dump_counters_v (const char *format, va_list args);
 		char*	get_java_class_name_for_TypeManager (jclass klass);
 
+#if defined (NET6) && defined (RELEASE)
+		static void have_dotnet_tracing_component ()
+		{
+			dotnet_tracing_component_present = true;
+		}
+#endif // def NET6 && def RELEASE
+
 	private:
 #if defined (ANDROID)
 		static void mono_log_handler (const char *log_domain, const char *log_level, const char *message, mono_bool fatal, void *user_data);
@@ -215,6 +222,7 @@ namespace xamarin::android::internal
 		static void* fetch_or_create_pinvoke_map_entry (std::string const& library_name, std::string const& entrypoint_name, pinvoke_api_map_ptr api_map, bool need_lock);
 		static void* monodroid_pinvoke_override (const char *library_name, const char *entrypoint_name);
 		static void* monodroid_dlopen (const char *name, int flags, char **err);
+		static bool  can_load_dso (const char *name);
 #endif // def NET6
 		static void* monodroid_dlopen (const char *name, int flags, char **err, void *user_data);
 		static void* monodroid_dlsym (void *handle, const char *name, char **err, void *user_data);
@@ -319,6 +327,8 @@ namespace xamarin::android::internal
 		static pinvoke_library_map    other_pinvoke_map;
 		static MonoCoreRuntimeProperties monovm_core_properties;
 		MonovmRuntimeConfigArguments  runtime_config_args;
+
+		static bool dotnet_tracing_component_present;
 #else // def NET6
 		static std::mutex   api_init_lock;
 		static void        *api_dso_handle;
