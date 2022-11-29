@@ -7,12 +7,14 @@
 #include <typeinfo>
 #include <type_traits>
 
-#if defined(__unix__) || defined(__APPLE__)
+#if defined(__linux__) || defined(__APPLE__) || defined (__unix__)
 #define HAVE_CXA_DEMANGLE 1
 #endif
 
 #if defined(HAVE_CXA_DEMANGLE)
 #include <cxxabi.h>
+#elif defined (_WIN32)
+#error Windows not supported yet
 #else
 #error System not supported yet
 #endif
@@ -24,8 +26,9 @@ namespace xamarin::abi::generator
 	class TypeDescriptorBase
 	{
 	public:
-		explicit TypeDescriptorBase (std::string managed_type_name)
-			: _type_name (managed_type_name)
+		explicit TypeDescriptorBase (std::string managed_type_name, ManagedClassModifier modifiers)
+			: _type_name (managed_type_name),
+			  _modifiers (modifiers)
 		{}
 
 		const std::string& type_name () const noexcept
@@ -39,28 +42,60 @@ namespace xamarin::abi::generator
 			return native_name;
 		}
 
+		ManagedClassModifier class_modifiers () const noexcept
+		{
+			return _modifiers;
+		}
+
 		virtual void write_managed (ManagedCodeWriter& output)
 		{
-			output.start_class (type_name ());
+			output.start_class (type_name (), _modifiers);
+
+			std::vector<ManagedCodeWriter::ManagedArgument> ctor_args {
+				std::make_pair ("INativeTypeWriter", "writer")
+			};
+
+			output.start_constructor (type_name (), &ctor_args);
+			output.end_constructor ();
+
+			write_fields (output);
 			output.end_class ();
 		};
 
+	protected:
+		virtual void write_fields (ManagedCodeWriter& output);
+
 	private:
-		std::string const _type_name;
+		std::string const        _type_name;
+		ManagedClassModifier     _modifiers;
 	};
 
 	template<typename Type, size_t TypeSize>
 	class TypeDescriptor : public TypeDescriptorBase
 	{
+		static constexpr ManagedClassModifier DefaultClassModifiers = ManagedClassModifier::Internal;
+
 	public:
 		static constexpr size_t type_size = TypeSize;
 
 	public:
-		explicit TypeDescriptor (std::string managed_type_name = demangle_name (typeid(Type)))
-			: TypeDescriptorBase (managed_type_name)
+		explicit TypeDescriptor (std::string managed_type_name, ManagedClassModifier modifiers)
+			: TypeDescriptorBase (managed_type_name, modifiers)
 		{
 			static_assert (sizeof(Type) == TypeSize, "Specified type size does not match the actual one.");
 		}
+
+		explicit TypeDescriptor (std::string managed_type_name)
+			: TypeDescriptor (managed_type_name, DefaultClassModifiers)
+		{}
+
+		explicit TypeDescriptor (ManagedClassModifier modifiers)
+			: TypeDescriptor (demangled_type_name (), modifiers)
+		{}
+
+		explicit TypeDescriptor ()
+			: TypeDescriptor (demangled_type_name (), DefaultClassModifiers)
+		{}
 
 	protected:
 		template<typename ExpectedFieldType, size_t ExpectedFieldOffset, size_t ActualOffset, const char NativeFieldName[], typename ActualFieldType>
@@ -94,8 +129,10 @@ namespace xamarin::abi::generator
 		}
 
 	private:
-		static std::string demangle_name (std::type_info const& ti)
+		static std::string demangled_type_name ()
 		{
+			std::type_info const &ti = typeid(Type);
+
 #if defined(HAVE_CXA_DEMANGLE)
 			int status;
 			return ::abi::__cxa_demangle (ti.name (), 0, 0, &status);

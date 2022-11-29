@@ -13,6 +13,8 @@ int main (int argc, char **argv)
 	};
 
 	ManagedCodeWriter writer { "/tmp/test.cs" };
+	writer.add_using ("Xamarin.Android.Tasks");
+	writer.add_newline ();
 	writer.start_namespace ("Xamarin.Android.NativeRuntime");
 	for (TypeDescriptorBase& desc : type_descriptors) {
 		desc.write_managed (writer);

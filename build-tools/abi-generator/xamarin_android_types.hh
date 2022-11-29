@@ -29,8 +29,31 @@ namespace xamarin::abi::generator
 		static constexpr size_t expected_field_offset_assembly_name_length = 20;
 
 	public:
-		explicit BinaryTypeMapHeaderDescriptor ();
-		virtual void write_managed (ManagedCodeWriter& output) override final;
+		explicit BinaryTypeMapHeaderDescriptor ()
+		{
+			init_fields ();
+		}
+
+		explicit BinaryTypeMapHeaderDescriptor (std::string managed_type_name, ManagedClassModifier modifiers)
+			: TypeDescriptor (managed_type_name, modifiers)
+		{
+			init_fields ();
+		}
+
+		explicit BinaryTypeMapHeaderDescriptor (std::string managed_type_name)
+			: TypeDescriptor (managed_type_name)
+		{
+			init_fields ();
+		}
+
+		explicit BinaryTypeMapHeaderDescriptor (ManagedClassModifier modifiers)
+			: TypeDescriptor (modifiers)
+		{
+			init_fields ();
+		}
+
+	private:
+		void init_fields ();
 	};
 }
 #endif // __XAMARIN_ANDROID_TYPES_HH

@@ -60,5 +60,6 @@ endif()
 add_executable(
   abi-generator
   main.cc
+  type_descriptor.cc
   xamarin_android_types.cc
   )

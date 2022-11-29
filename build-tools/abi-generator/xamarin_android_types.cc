@@ -3,7 +3,7 @@
 
 using namespace xamarin::abi::generator;
 
-BinaryTypeMapHeaderDescriptor::BinaryTypeMapHeaderDescriptor ()
+void BinaryTypeMapHeaderDescriptor::init_fields ()
 {
 	add_field <uint32_t, expected_field_offset_magic, offsetof (BinaryTypeMapHeader, magic), field_name_magic> (&BinaryTypeMapHeader::magic);
 	add_field <uint32_t, expected_field_offset_version, offsetof (BinaryTypeMapHeader, version), field_name_version> (&BinaryTypeMapHeader::version);
@@ -13,8 +13,4 @@ BinaryTypeMapHeaderDescriptor::BinaryTypeMapHeaderDescriptor ()
 	add_field <uint32_t, expected_field_offset_assembly_name_length, offsetof (BinaryTypeMapHeader, assembly_name_length), field_name_assembly_name_length> (&BinaryTypeMapHeader::assembly_name_length);
 
 	ensure_all_fields_added ();
-}
-
-void BinaryTypeMapHeaderDescriptor::write_managed (ManagedCodeWriter& output)
-{
 }
