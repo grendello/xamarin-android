@@ -126,6 +126,8 @@ namespace Xamarin.Android.Tasks
 
 		List<Regex> excludePatterns = new List<Regex> ();
 
+		int checkpointCounter = -1;
+
 		void ExecuteWithAbi (string [] supportedAbis, string apkInputPath, string apkOutputPath, bool debug, bool compress, IDictionary<string, CompressedAssemblyInfo> compressedAssembliesInfo, string assemblyStoreApkName)
 		{
 			ArchiveFileList files = new ArchiveFileList ();
@@ -172,6 +174,7 @@ namespace Xamarin.Android.Tasks
 							entry.Extract (ms);
 							Log.LogDebugMessage ($"Refreshing {entryName} from {apkInputPath}");
 							apk.Archive.AddStream (ms, entryName, compressionMethod: entry.CompressionMethod);
+							CheckpointZip (apk, "#L_3");
 						}
 					}
 				}
@@ -216,6 +219,7 @@ namespace Xamarin.Android.Tasks
 					}
 					Log.LogDebugMessage ("\tAdding {0}", file.filePath);
 					apk.Archive.AddFile (file.filePath, item, compressionMethod: compressionMethod);
+					CheckpointZip (apk, "#L_4");
 					count++;
 					if (count >= ZipArchiveEx.ZipFlushFilesLimit) {
 						apk.Flush();
@@ -274,6 +278,7 @@ namespace Xamarin.Android.Tasks
 							}
 							Log.LogDebugMessage ($"Adding {path} from {jarFile} as the archive file is out of date.");
 							apk.Archive.AddEntry (data, path);
+							CheckpointZip (apk, "#L_5");
 						}
 					}
 					count++;
@@ -547,6 +552,16 @@ namespace Xamarin.Android.Tasks
 			}
 		}
 
+		void CheckpointZip (ZipArchiveEx apk, string location)
+		{
+			checkpointCounter++;
+			string checkpointPath = Path.Combine (Path.GetDirectoryName (apk.ArchivePath), $"cp_{checkpointCounter:00000000}-{Path.GetFileName (apk.ArchivePath)}");
+			Log.LogDebugMessage ($"Creating APK archive checkpoint: ${checkpointPath}");
+			apk.Flush (reopen: false);
+			File.Copy (apk.ArchivePath, checkpointPath);
+			apk.Reopen ();
+		}
+
 		bool AddFileToArchiveIfNewer (ZipArchiveEx apk, string file, string inArchivePath, CompressionMethod compressionMethod = CompressionMethod.Default)
 		{
 			existingEntries.Remove (inArchivePath);
@@ -556,6 +571,7 @@ namespace Xamarin.Android.Tasks
 			}
 			Log.LogDebugMessage ($"Adding {file} as the archive file is out of date.");
 			apk.Archive.AddFile (file, inArchivePath, compressionMethod: compressionMethod);
+			CheckpointZip (apk, "#L_1");
 			return true;
 		}
 
@@ -580,6 +596,7 @@ namespace Xamarin.Android.Tasks
 				dest.WriteByte (0);
 				dest.Position = 0;
 				apk.Archive.AddEntry (inArchivePath, dest, compressionMethod);
+				CheckpointZip (apk, "#L_2");
 			}
 		}
 
@@ -627,6 +644,7 @@ namespace Xamarin.Android.Tasks
 			}
 			Log.LogDebugMessage ($"Adding native library: {filesystemPath} (APK path: {archivePath})");
 			apk.Archive.AddEntry (archivePath, File.OpenRead (filesystemPath), compressionMethod);
+			CheckpointZip (apk, "#L_6");
 		}
 
 		void AddRuntimeLibraries (ZipArchiveEx apk, string [] supportedAbis)

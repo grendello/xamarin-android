@@ -20,6 +20,8 @@ namespace Xamarin.Android.Tasks
 			get { return zip; }
 		}
 
+		public string ArchivePath => archive;
+
 		public bool AutoFlush { get; set; } = true;
 
 		public bool CreateDirectoriesInZip { get; set; } = true;
@@ -34,13 +36,27 @@ namespace Xamarin.Android.Tasks
 			zip = ZipArchive.Open(archive, filemode);
 		}
 
-		public void Flush ()
+		public void Flush (bool reopen = true)
 		{
 			if (zip != null) {
 				zip.Close ();
 				zip.Dispose ();
 				zip = null;
 			}
+
+			if (!reopen) {
+				return;
+			}
+
+			Reopen ();
+		}
+
+		public void Reopen ()
+		{
+			if (zip != null) {
+				throw new InvalidOperationException ("Reopen must be called only when underlying archive has been closed");
+			}
+
 			zip = ZipArchive.Open (archive, FileMode.Open);
 			filesWrittenTotalSize = 0;
 			filesWrittenTotalCount = 0;
